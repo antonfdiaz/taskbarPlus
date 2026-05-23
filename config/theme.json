@@ -18,7 +18,10 @@
     "date_format": "dd/MM/yyyy",
     "start_icon": "assets/wlogo.png",
     "search_icon": "assets/search.png",
-    "task_view_icon": "assets/taskview.png",
+    "task_view_icon": {
+        "default": "assets/taskview.png",
+        "hover": "assets/taskview_hover.png"
+    },
     "show_desktop_width": 5,
     "show_desktop_border_color": "#cccccc"
 }

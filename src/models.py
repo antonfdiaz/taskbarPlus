@@ -12,6 +12,7 @@ class TaskbarItem:
     id: str
     title: str
     icon: QIcon
+    hover_icon: QIcon | None = None
     pinned: bool = False
     running: bool = False
     active: bool = False
@@ -22,3 +23,4 @@ class TaskbarItem:
 class TrayItem:
     id: str
     icon: QIcon
+    hover_icon: QIcon | None = None

@@ -66,6 +66,7 @@ class TaskbarButton(QAbstractButton):
         self.config = config
         self.item = item
         self.icon = item.icon
+        self.hover_icon = item.hover_icon
         self.hovered = False
         self.pressed = False
 
@@ -114,7 +115,8 @@ class TaskbarButton(QAbstractButton):
         painter.fillRect(rect,bg)
 
         icon_size = self.config.theme.icon_size
-        pix = self.icon.pixmap(icon_size,icon_size)
+        icon = self.hover_icon if self.hovered and self.hover_icon else self.icon
+        pix = icon.pixmap(icon_size,icon_size)
 
         x = (rect.width()-pix.width())//2
         y = (rect.height()-pix.height())//2
@@ -239,6 +241,7 @@ class TrayIcon(QAbstractButton):
     def __init__(self,item: TrayItem,config: Config,parent=None):
         super().__init__(parent)
         self.icon = item.icon
+        self.hover_icon = item.hover_icon
         self.config = config
         self.hovered = False
         self.pressed = False
@@ -286,7 +289,8 @@ class TrayIcon(QAbstractButton):
         painter.fillRect(rect,bg)
 
         icon_size = self.config.theme.tray_icon_size
-        pix = self.icon.pixmap(icon_size,icon_size)
+        icon = self.hover_icon if self.hovered and self.hover_icon else self.icon
+        pix = icon.pixmap(icon_size,icon_size)
 
         x = (rect.width()-pix.width())//2
         y = (rect.height()-pix.height())//2

@@ -3,6 +3,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 @dataclass
+class IconTheme:
+    default: str
+    hover: str | None = None
+
+@dataclass
 class LayoutConfig:
     left: list
     center: list
@@ -27,9 +32,9 @@ class ThemeConfig:
     menu_separator_color: str
     clock_format: str
     date_format: str
-    start_icon: str
-    search_icon: str
-    task_view_icon: str
+    start_icon: IconTheme
+    search_icon: IconTheme
+    task_view_icon: IconTheme
     show_desktop_width: int
     show_desktop_border_color: str
 
@@ -47,9 +52,21 @@ class Config:
         with open(config_dir/"theme.json","r",encoding="utf-8") as f:
             theme_data = json.load(f)
 
+        for key in ("start_icon","search_icon","task_view_icon"):
+            theme_data[key] = self.parse_icon_theme(theme_data[key])
+
         with open(config_dir/"apps.json","r",encoding="utf-8") as f:
             apps_data = json.load(f)
 
         self.layout = LayoutConfig(**layout_data)
         self.theme = ThemeConfig(**theme_data)
         self.apps = AppsConfig(**apps_data)
+
+    def parse_icon_theme(self,value) -> IconTheme:
+        if isinstance(value,str):
+            return IconTheme(default=value)
+
+        return IconTheme(
+            default=value["default"],
+            hover=value.get("hover")
+        )

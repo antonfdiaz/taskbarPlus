@@ -143,9 +143,14 @@ class MainWindow(QMainWindow):
         button.clicked.connect(handler)
         return button
 
-    def create_button(self,item_id: str,title: str,icon_path: str,handler) -> TaskbarButton:
+    def create_button(self,item_id: str,title: str,icon_theme,handler) -> TaskbarButton:
         button = TaskbarButton(
-            TaskbarItem(id=item_id,title=title,icon=QIcon(icon_path)),
+            TaskbarItem(
+                id=item_id,
+                title=title,
+                icon=QIcon(icon_theme.default),
+                hover_icon=QIcon(icon_theme.hover) if icon_theme.hover else None
+            ),
             self.config
         )
         button.setToolTip(title)
