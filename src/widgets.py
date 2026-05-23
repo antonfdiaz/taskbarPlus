@@ -4,7 +4,7 @@ from PySide6.QtGui import *
 import win32con
 from src.shell import press_key,release_key,tap_key
 from src.config import Config
-from src.models import TaskbarItem
+from src.models import *
 
 class TaskbarAppsBar(QWidget):
     itemClicked = Signal(object,object)
@@ -236,9 +236,9 @@ class TrayWidget(QWidget):
             self.layout.addWidget(item)
 
 class TrayIcon(QAbstractButton):
-    def __init__(self,icon: QIcon,config: Config,parent=None):
+    def __init__(self,item: TrayItem,config: Config,parent=None):
         super().__init__(parent)
-        self.icon = icon
+        self.icon = item.icon
         self.config = config
         self.hovered = False
         self.pressed = False

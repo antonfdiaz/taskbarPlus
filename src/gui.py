@@ -4,7 +4,7 @@ from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import QTimer
 from src.config import Config
-from src.models import TaskbarItem,WindowEntry
+from src.models import *
 from src.widgets import *
 from src.shell import *
 import subprocess
@@ -89,6 +89,12 @@ class MainWindow(QMainWindow):
         tap_key(ord("S"))
         release_key(win32con.VK_LWIN)
 
+    def open_network_settings(self):
+        subprocess.run("explorer.exe ms-availablenetworks:",shell=True)
+
+    def open_volume_settings(self):
+        launch_windows_app("sndvol.exe")
+
     def build_section(self,sections: list[str],apps_items: list[TaskbarItem]) -> QWidget:
         container = QWidget()
         section_layout = QHBoxLayout()
@@ -107,8 +113,8 @@ class MainWindow(QMainWindow):
                 self.apps_bars.append(widget)
             elif section == "tray":
                 tray_items = [
-                    TrayIcon(QIcon("assets/network.png"),self.config),
-                    TrayIcon(QIcon("assets/volume.png"),self.config)
+                    self.create_tray_icon("network","assets/network.png",self.open_network_settings),
+                    self.create_tray_icon("volume","assets/volume.png",self.open_volume_settings)
                 ]
                 widget = TrayWidget(tray_items,self.config)
             elif section == "clock":
@@ -121,6 +127,14 @@ class MainWindow(QMainWindow):
             section_layout.addWidget(widget)
 
         return container
+    
+    def create_tray_icon(self,icon_id: str,icon_path: str,handler) -> TrayIcon:
+        button = TrayIcon(
+            TrayItem(id=icon_id,icon=QIcon(icon_path)),
+            self.config
+        )
+        button.clicked.connect(handler)
+        return button
 
     def create_button(self,item_id: str,title: str,icon_path: str,handler) -> TaskbarButton:
         button = TaskbarButton(

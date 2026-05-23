@@ -17,3 +17,8 @@ class TaskbarItem:
     active: bool = False
     launch_path: str | None = None
     windows: list[WindowEntry] = field(default_factory=list)
+
+@dataclass
+class TrayItem:
+    id: str
+    icon: QIcon
