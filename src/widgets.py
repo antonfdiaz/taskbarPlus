@@ -106,6 +106,8 @@ class TaskbarButton(QAbstractButton):
             bg = QColor(self.config.theme.active)
         elif self.hovered:
             bg = QColor(self.config.theme.hover)
+        elif self.item.active:
+            bg = QColor(self.config.theme.active)
 
         painter.fillRect(rect,bg)
 
