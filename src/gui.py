@@ -43,6 +43,8 @@ class MainWindow(QMainWindow):
                 background-color: {self.config.theme.menu_separator_color};
             }}
         """)
+        self.menu.addAction("Task Manager",lambda: launch_windows_app("taskmgr.exe"))
+        self.menu.addSeparator()
         self.menu.addAction("Refresh",self.refresh_apps)
         self.menu.addAction("Exit",self.close)
         self.setContextMenuPolicy(Qt.CustomContextMenu)

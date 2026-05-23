@@ -134,3 +134,8 @@ def hide_taskbar():
 
 def show_taskbar():
     win32gui.ShowWindow(win32gui.FindWindow("Shell_TrayWnd",None),win32con.SW_SHOW)
+
+def launch_windows_app(target: str):
+    result = windll.shell32.ShellExecuteW(None,"open",target,None,None,win32con.SW_SHOWNORMAL)
+    if result <= 32:
+        raise OSError(f"ShellExecuteW failed for {target!r} with code {result}")
