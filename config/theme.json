@@ -1,0 +1,14 @@
+{
+    "taskbar_height": 40,
+    "background": "#202020",
+    "foreground": "#ffffff",
+    "hover": "#2a2a2a",
+    "active": "#3a3a3a",
+    "accent": "#4cc2ff",
+    "icon_size": 26,
+    "button_width": 46,
+    "button_height": 40,
+    "padding_x": 8,
+    "padding_y": 4,
+    "gap": 0
+}

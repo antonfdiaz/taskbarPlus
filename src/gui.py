@@ -1,0 +1,220 @@
+from collections import defaultdict
+import os
+from PySide6.QtWidgets import *
+from PySide6.QtGui import *
+from PySide6.QtCore import QTimer
+from src.config import Config
+from src.models import TaskbarItem,WindowEntry
+from src.widgets import ClockWidget,TaskbarAppsBar,TaskbarButton
+from src.shell import get_app_icon,list_open_windows
+import subprocess
+import win32gui
+import win32con
+
+class MainWindow(QMainWindow):
+    def __init__(self,config: Config):
+        super().__init__()
+        self.config: Config = config
+        self.dynamic_app_order: list[str] = []
+
+        self.setWindowTitle("taskbarPlus")
+        self.setFixedSize(600,self.config.theme.taskbar_height)
+
+        central_widget = QWidget()
+        central_widget.setObjectName("taskbarRoot")
+        self.setCentralWidget(central_widget)
+
+        central_widget.setStyleSheet(f"""
+            QWidget#taskbarRoot {{
+                background-color: {self.config.theme.background};
+                color: {self.config.theme.foreground};
+            }}
+        """)
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        layout.setSpacing(0)
+        central_widget.setLayout(layout)
+
+        left_container = QWidget()
+        left_layout = QHBoxLayout()
+        left_layout.setContentsMargins(0,0,0,0)
+        left_layout.setSpacing(self.config.theme.gap)
+        left_container.setLayout(left_layout)
+
+        self.apps_bar = None
+
+        for section in self.config.layout.left:
+            if section == "start":
+                start_btn = TaskbarButton(TaskbarItem(id="start",title="Start",icon=QIcon("assets/wlogo.png")),self.config)
+                start_btn.setToolTip("Start")
+                left_layout.addWidget(start_btn)
+            elif section == "search":
+                search_btn = TaskbarButton(TaskbarItem(id="search",title="Search",icon=QIcon("assets/search.png")),self.config)
+                search_btn.setToolTip("Search")
+                left_layout.addWidget(search_btn)
+            elif section == "apps":
+                items = self.build_taskbar_items()
+                self.apps_bar = TaskbarAppsBar(items,self.config)
+                self.apps_bar.itemClicked.connect(self.on_item_clicked)
+                left_layout.addWidget(self.apps_bar)
+
+        right_container = QWidget()
+        right_layout = QHBoxLayout()
+        right_layout.setContentsMargins(0,0,0,0)
+        right_layout.setSpacing(self.config.theme.gap)
+        right_container.setLayout(right_layout)
+
+        clock = ClockWidget(self.config)
+        right_layout.addWidget(clock)
+
+        layout.addWidget(left_container)
+        layout.addStretch()
+        layout.addWidget(right_container)
+
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.refresh_apps)
+        self.timer.start(1500)
+
+    def normalize_path(self,path: str | None) -> str | None:
+        if not path:
+            return None
+        return os.path.normcase(os.path.normpath(path))
+
+    def build_taskbar_items(self) -> list[TaskbarItem]:
+        items = []
+        open_windows = list_open_windows()
+        grouped = defaultdict(list)
+        active_hwnd = win32gui.GetForegroundWindow()
+
+        #group open windows by their path
+        for w in open_windows:
+            path = w["path"]
+            if not path:
+                continue
+
+            normalized_path = self.normalize_path(path)
+            grouped[normalized_path].append(WindowEntry(
+                hwnd=w["hwnd"],
+                title=w["title"],
+                path=path
+            ))
+
+        used_paths = set()
+
+        for app in self.config.apps.pinned:
+            path = app.get("path")
+            normalized_path = self.normalize_path(path)
+            windows = grouped.get(normalized_path,[]) if normalized_path else []
+            is_active = any(w.hwnd == active_hwnd for w in windows)
+
+            icon = get_app_icon(path,self.config.theme.icon_size) if path else QIcon()
+
+            items.append(TaskbarItem(
+                id=app["id"],
+                title=app["title"],
+                icon=icon,
+                pinned=True,
+                running=len(windows) > 0,
+                active=is_active,
+                launch_path=path,
+                windows=windows
+            ))
+
+            if normalized_path:
+                used_paths.add(normalized_path)
+
+        dynamic_items: dict[str, TaskbarItem] = {}
+
+        for normalized_path,windows in grouped.items():
+            if normalized_path in used_paths:
+                continue
+
+            first = windows[0]
+            is_active = any(w.hwnd == active_hwnd for w in windows)
+
+            dynamic_items[normalized_path] = TaskbarItem(
+                id=normalized_path,
+                title=first.title,
+                icon=get_app_icon(first.path,self.config.theme.icon_size),
+                pinned=False,
+                running=True,
+                active=is_active,
+                launch_path=first.path,
+                windows=windows
+            )
+
+        current_dynamic_ids = set(dynamic_items)
+        stable_dynamic_order = [
+            item_id for item_id in self.dynamic_app_order
+            if item_id in current_dynamic_ids
+        ]
+
+        for item_id in dynamic_items:
+            if item_id not in stable_dynamic_order:
+                stable_dynamic_order.append(item_id)
+
+        self.dynamic_app_order = stable_dynamic_order
+
+        for item_id in stable_dynamic_order:
+            items.append(dynamic_items[item_id])
+
+        return items
+    
+    def refresh_apps(self):
+        if self.apps_bar is None:
+            return
+
+        items = self.build_taskbar_items()
+        self.apps_bar.set_items(items)
+
+    def on_item_clicked(self,item: TaskbarItem,button: QWidget):
+        count = len(item.windows)
+
+        if count == 0:
+            if item.launch_path:
+                subprocess.Popen(item.launch_path)
+        elif count == 1:
+            hwnd = item.windows[0].hwnd
+            self.activate_window(hwnd)
+        else:
+            self.show_windows_menu(item,button)
+
+    def activate_window(self,hwnd: int):
+        try:
+            win32gui.ShowWindow(hwnd,win32con.SW_RESTORE)
+            win32gui.SetForegroundWindow(hwnd)
+        except Exception as e:
+            print("couldn't activate window:",e)
+
+    def show_windows_menu(self,item: TaskbarItem,button: QWidget):
+        menu = QMenu(self)
+        menu.setStyleSheet(f"""
+            QMenu {{
+                background-color: {self.config.theme.background};
+                color: {self.config.theme.foreground};
+            }}
+            QMenu::item {{
+                padding: 6px;
+                padding-left: 2px;
+            }}
+            QMenu::item:selected {{
+                background-color: {self.config.theme.hover};
+            }}
+        """)
+
+        for window in item.windows:
+            action = menu.addAction(window.title)
+            action.triggered.connect(
+                lambda checked=False,hwnd=window.hwnd: self.activate_window(hwnd)
+            )
+
+        new_win_action = menu.addAction("Open new window")
+        new_win_action.setIcon(QIcon("assets/add.png").pixmap(15,15))
+        new_win_action.triggered.connect(
+            lambda checked=False,path=item.launch_path: subprocess.Popen(path) if path else None
+        )
+
+        pos = button.mapToGlobal(button.rect().topLeft())
+        pos.setY(pos.y()-menu.sizeHint().height())
+        menu.exec(pos)
