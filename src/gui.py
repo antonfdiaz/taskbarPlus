@@ -80,7 +80,7 @@ class MainWindow(QMainWindow):
         for section in self.config.layout.left:
             if section == "start":
                 self.start_btn = TaskbarButton(
-                    TaskbarItem(id="start",title="Start",icon=QIcon("assets/wlogo.png")),
+                    TaskbarItem(id="start",title="Start",icon=QIcon(self.config.theme.start_icon)),
                     self.config
                 )
                 self.start_btn.setToolTip("Start")
@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
                 left_layout.addWidget(self.start_btn)
             elif section == "search":
                 self.search_btn = TaskbarButton(
-                    TaskbarItem(id="search",title="Search",icon=QIcon("assets/search.png")),
+                    TaskbarItem(id="search",title="Search",icon=QIcon(self.config.theme.search_icon)),
                     self.config
                 )
                 self.search_btn.setToolTip("Search")

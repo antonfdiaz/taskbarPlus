@@ -25,6 +25,8 @@ class ThemeConfig:
     menu_separator_color: str
     clock_format: str
     date_format: str
+    start_icon: str
+    search_icon: str
 
 @dataclass
 class AppsConfig:

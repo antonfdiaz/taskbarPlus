@@ -13,5 +13,7 @@
     "gap": 0,
     "menu_separator_color": "#404040",
     "clock_format": "hh:mm:ss",
-    "date_format": "dd/MM/yyyy"
+    "date_format": "dd/MM/yyyy",
+    "start_icon": "assets/wlogo.png",
+    "search_icon": "assets/search.png"
 }
