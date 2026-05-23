@@ -16,6 +16,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.config: Config = config
         self.dynamic_app_order: list[str] = []
+        self.apps_bars: list[TaskbarAppsBar] = []
 
         screen_size = QGuiApplication.primaryScreen().size()
 
@@ -66,48 +67,11 @@ class MainWindow(QMainWindow):
         layout.setSpacing(0)
         central_widget.setLayout(layout)
 
-        left_container = QWidget()
-        left_layout = QHBoxLayout()
-        left_layout.setContentsMargins(0,0,0,0)
-        left_layout.setSpacing(self.config.theme.gap)
-        left_container.setLayout(left_layout)
+        sections = [*self.config.layout.left,*self.config.layout.right]
+        apps_items = self.build_taskbar_items() if "apps" in sections else []
 
-        self.apps_bar = None
-
-        self.start_btn = None
-        self.search_btn = None
-
-        for section in self.config.layout.left:
-            if section == "start":
-                self.start_btn = TaskbarButton(
-                    TaskbarItem(id="start",title="Start",icon=QIcon(self.config.theme.start_icon)),
-                    self.config
-                )
-                self.start_btn.setToolTip("Start")
-                self.start_btn.clicked.connect(self.on_start_clicked)
-                left_layout.addWidget(self.start_btn)
-            elif section == "search":
-                self.search_btn = TaskbarButton(
-                    TaskbarItem(id="search",title="Search",icon=QIcon(self.config.theme.search_icon)),
-                    self.config
-                )
-                self.search_btn.setToolTip("Search")
-                self.search_btn.clicked.connect(self.on_search_clicked)
-                left_layout.addWidget(self.search_btn)
-            elif section == "apps":
-                items = self.build_taskbar_items()
-                self.apps_bar = TaskbarAppsBar(items,self.config)
-                self.apps_bar.itemClicked.connect(self.on_item_clicked)
-                left_layout.addWidget(self.apps_bar)
-
-        right_container = QWidget()
-        right_layout = QHBoxLayout()
-        right_layout.setContentsMargins(0,0,0,0)
-        right_layout.setSpacing(self.config.theme.gap)
-        right_container.setLayout(right_layout)
-
-        clock = ClockWidget(self.config)
-        right_layout.addWidget(clock)
+        left_container = self.build_section(self.config.layout.left,apps_items)
+        right_container = self.build_section(self.config.layout.right,apps_items)
 
         layout.addWidget(left_container)
         layout.addStretch()
@@ -124,6 +88,40 @@ class MainWindow(QMainWindow):
         press_key(win32con.VK_LWIN)
         tap_key(ord("S"))
         release_key(win32con.VK_LWIN)
+
+    def build_section(self,sections: list[str],apps_items: list[TaskbarItem]) -> QWidget:
+        container = QWidget()
+        section_layout = QHBoxLayout()
+        section_layout.setContentsMargins(0,0,0,0)
+        section_layout.setSpacing(self.config.theme.gap)
+        container.setLayout(section_layout)
+
+        for section in sections:
+            if section == "start":
+                widget = self.create_button("start","Start",self.config.theme.start_icon,self.on_start_clicked)
+            elif section == "search":
+                widget = self.create_button("search","Search",self.config.theme.search_icon,self.on_search_clicked)
+            elif section == "apps":
+                widget = TaskbarAppsBar(apps_items,self.config)
+                widget.itemClicked.connect(self.on_item_clicked)
+                self.apps_bars.append(widget)
+            elif section == "clock":
+                widget = ClockWidget(self.config)
+            else:
+                continue
+
+            section_layout.addWidget(widget)
+
+        return container
+
+    def create_button(self,item_id: str,title: str,icon_path: str,handler) -> TaskbarButton:
+        button = TaskbarButton(
+            TaskbarItem(id=item_id,title=title,icon=QIcon(icon_path)),
+            self.config
+        )
+        button.setToolTip(title)
+        button.clicked.connect(handler)
+        return button
 
     def normalize_path(self,path: str | None) -> str | None:
         if not path:
@@ -211,11 +209,12 @@ class MainWindow(QMainWindow):
         return items
     
     def refresh_apps(self):
-        if self.apps_bar is None:
+        if not self.apps_bars:
             return
 
         items = self.build_taskbar_items()
-        self.apps_bar.set_items(items)
+        for apps_bar in self.apps_bars:
+            apps_bar.set_items(items)
 
     def on_item_clicked(self,item: TaskbarItem,button: QWidget):
         count = len(item.windows)
