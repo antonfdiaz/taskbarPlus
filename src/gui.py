@@ -105,6 +105,12 @@ class MainWindow(QMainWindow):
                 widget = TaskbarAppsBar(apps_items,self.config)
                 widget.itemClicked.connect(self.on_item_clicked)
                 self.apps_bars.append(widget)
+            elif section == "tray":
+                tray_items = [
+                    TrayIcon(QIcon("assets/network.png"),self.config),
+                    TrayIcon(QIcon("assets/volume.png"),self.config)
+                ]
+                widget = TrayWidget(tray_items,self.config)
             elif section == "clock":
                 widget = ClockWidget(self.config)
             elif section == "show_desktop":

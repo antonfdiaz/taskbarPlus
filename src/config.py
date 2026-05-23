@@ -17,11 +17,13 @@ class ThemeConfig:
     active: str
     accent: str
     icon_size: int
+    tray_icon_size: int
     button_width: int
     button_height: int
     padding_x: int
     padding_y: int
     gap: int
+    tray_gap: int
     menu_separator_color: str
     clock_format: str
     date_format: str

@@ -207,3 +207,87 @@ class ShowDesktopButton(QAbstractButton):
             tap_key(ord("D"))
             release_key(win32con.VK_LWIN)
         super().mouseReleaseEvent(event)
+
+class TrayWidget(QWidget):
+    def __init__(self,items: list[TrayIcon],config: Config):
+        super().__init__()
+        self.config = config
+        self.setFixedHeight(self.config.theme.taskbar_height)
+        self.setStyleSheet(f"""
+            background-color: {self.config.theme.background};
+            color: {self.config.theme.foreground};
+        """)
+
+        self.items = items
+        self.layout = QHBoxLayout()
+        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setSpacing(self.config.theme.tray_gap)
+        self.setLayout(self.layout)
+        self.rebuild()
+
+    def rebuild(self):
+        while self.layout.count():
+            child = self.layout.takeAt(0)
+            widget = child.widget()
+            if widget is not None:
+                widget.deleteLater()
+                
+        for item in self.items:
+            self.layout.addWidget(item)
+
+class TrayIcon(QAbstractButton):
+    def __init__(self,icon: QIcon,config: Config,parent=None):
+        super().__init__(parent)
+        self.icon = icon
+        self.config = config
+        self.hovered = False
+        self.pressed = False
+
+        self.setMouseTracking(True)
+        self.setFixedSize(
+            self.config.theme.tray_icon_size+self.config.theme.padding_x,
+            self.config.theme.button_height
+        )
+
+    def enterEvent(self,event):
+        self.hovered = True
+        self.update()
+        super().enterEvent(event)
+
+    def leaveEvent(self,event):
+        self.hovered = False
+        self.pressed = False
+        self.update()
+        super().leaveEvent(event)
+
+    def mousePressEvent(self,event):
+        if event.button() == Qt.LeftButton:
+            self.pressed = True
+            self.update()
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self,event):
+        self.pressed = False
+        self.update()
+        super().mouseReleaseEvent(event)
+
+    def paintEvent(self,event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        rect = self.rect()
+
+        bg = QColor(0,0,0,0)
+        if self.pressed:
+            bg = QColor(self.config.theme.active)
+        elif self.hovered:
+            bg = QColor(self.config.theme.hover)
+
+        painter.fillRect(rect,bg)
+
+        icon_size = self.config.theme.tray_icon_size
+        pix = self.icon.pixmap(icon_size,icon_size)
+
+        x = (rect.width()-pix.width())//2
+        y = (rect.height()-pix.height())//2
+        painter.drawPixmap(x,y,pix)
