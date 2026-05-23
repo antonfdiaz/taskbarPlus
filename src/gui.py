@@ -89,6 +89,11 @@ class MainWindow(QMainWindow):
         tap_key(ord("S"))
         release_key(win32con.VK_LWIN)
 
+    def on_task_view_clicked(self):
+        press_key(win32con.VK_LWIN)
+        tap_key(win32con.VK_TAB)
+        release_key(win32con.VK_LWIN)
+
     def open_network_settings(self):
         subprocess.run("explorer.exe ms-availablenetworks:",shell=True)
 
@@ -107,6 +112,8 @@ class MainWindow(QMainWindow):
                 widget = self.create_button("start","Start",self.config.theme.start_icon,self.on_start_clicked)
             elif section == "search":
                 widget = self.create_button("search","Search",self.config.theme.search_icon,self.on_search_clicked)
+            elif section == "task_view":
+                widget = self.create_button("task_view","Task View",self.config.theme.task_view_icon,self.on_task_view_clicked)
             elif section == "apps":
                 widget = TaskbarAppsBar(apps_items,self.config)
                 widget.itemClicked.connect(self.on_item_clicked)

@@ -29,6 +29,7 @@ class ThemeConfig:
     date_format: str
     start_icon: str
     search_icon: str
+    task_view_icon: str
     show_desktop_width: int
     show_desktop_border_color: str
 
