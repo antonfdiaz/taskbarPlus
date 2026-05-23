@@ -17,8 +17,36 @@ class MainWindow(QMainWindow):
         self.config: Config = config
         self.dynamic_app_order: list[str] = []
 
+        screen_size = QGuiApplication.primaryScreen().size()
+
         self.setWindowTitle("taskbarPlus")
-        self.setFixedSize(600,self.config.theme.taskbar_height)
+        self.setGeometry(0,screen_size.height()-self.config.theme.taskbar_height,screen_size.width(),self.config.theme.taskbar_height)
+        self.setFixedSize(screen_size.width(),self.config.theme.taskbar_height)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+
+        self.menu = QMenu(self)
+        self.menu.setStyleSheet(f"""
+            QMenu {{
+                background-color: {self.config.theme.background};
+                color: {self.config.theme.foreground};
+                border: 1px solid {self.config.theme.foreground};
+            }}
+            QMenu::item {{
+                padding: 8px;
+                padding-right: 80px;
+            }}
+            QMenu::item:selected {{
+                background-color: {self.config.theme.hover};
+            }}
+            QMenu::separator {{
+                height: 1px;
+                background-color: {self.config.theme.menu_separator_color};
+            }}
+        """)
+        self.menu.addAction("Refresh",self.refresh_apps)
+        self.menu.addAction("Exit",self.close)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(lambda pos: self.menu.exec(self.mapToGlobal(pos)))
 
         central_widget = QWidget()
         central_widget.setObjectName("taskbarRoot")

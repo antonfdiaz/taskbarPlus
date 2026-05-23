@@ -53,8 +53,8 @@ class ClockWidget(QLabel):
         self.update_time()
 
     def update_time(self):
-        current_time = QTime.currentTime().toString("hh:mm:ss")
-        current_date = QDate.currentDate().toString("dd/MM/yyyy")
+        current_time = QTime.currentTime().toString(self.config.theme.clock_format)
+        current_date = QDate.currentDate().toString(self.config.theme.date_format)
         self.setText(current_time+"\n"+current_date)
         QTimer.singleShot(1000,self.update_time)
 

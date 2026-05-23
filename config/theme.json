@@ -10,5 +10,8 @@
     "button_height": 40,
     "padding_x": 8,
     "padding_y": 4,
-    "gap": 0
+    "gap": 0,
+    "menu_separator_color": "#404040",
+    "clock_format": "hh:mm:ss",
+    "date_format": "dd/MM/yyyy"
 }

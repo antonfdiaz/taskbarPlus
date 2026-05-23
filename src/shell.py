@@ -9,6 +9,7 @@ import win32con
 import win32gui
 import win32process
 import psutil
+from ctypes import windll
 
 DWMWA_CLOAKED = 14
 
@@ -127,3 +128,9 @@ def release_key(vk: int):
 def tap_key(vk: int):
     press_key(vk)
     release_key(vk)
+
+def hide_taskbar():
+    win32gui.ShowWindow(win32gui.FindWindow("Shell_TrayWnd",None),win32con.SW_HIDE)
+
+def show_taskbar():
+    win32gui.ShowWindow(win32gui.FindWindow("Shell_TrayWnd",None),win32con.SW_SHOW)

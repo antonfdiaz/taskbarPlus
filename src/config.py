@@ -22,6 +22,9 @@ class ThemeConfig:
     padding_x: int
     padding_y: int
     gap: int
+    menu_separator_color: str
+    clock_format: str
+    date_format: str
 
 @dataclass
 class AppsConfig:
