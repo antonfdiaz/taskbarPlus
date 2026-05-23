@@ -15,5 +15,7 @@
     "clock_format": "hh:mm:ss",
     "date_format": "dd/MM/yyyy",
     "start_icon": "assets/wlogo.png",
-    "search_icon": "assets/search.png"
+    "search_icon": "assets/search.png",
+    "show_desktop_width": 5,
+    "show_desktop_border_color": "#cccccc"
 }

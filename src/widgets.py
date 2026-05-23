@@ -1,6 +1,8 @@
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
+import win32con
+from src.shell import press_key,release_key,tap_key
 from src.config import Config
 from src.models import TaskbarItem
 
@@ -145,3 +147,63 @@ class TaskbarButton(QAbstractButton):
             else:
                 painter.fillRect(rect.width()//2-19,indicator_y,25,indicator_h,color)
                 painter.fillRect(rect.width()//2+7,indicator_y,12,indicator_h,darker_color)
+
+class ShowDesktopButton(QAbstractButton):
+    def __init__(self,config: Config,parent=None):
+        super().__init__(parent)
+        self.config = config
+        self.hovered = False
+        self.pressed = False
+
+        self.setMouseTracking(True)
+        self.setFixedSize(
+            self.config.theme.show_desktop_width,
+            self.config.theme.button_height
+        )
+
+    def enterEvent(self,event):
+        self.hovered = True
+        self.update()
+        super().enterEvent(event)
+
+    def leaveEvent(self,event):
+        self.hovered = False
+        self.pressed = False
+        self.update()
+        super().leaveEvent(event)
+
+    def mousePressEvent(self,event):
+        if event.button() == Qt.LeftButton:
+            self.pressed = True
+            self.update()
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self,event):
+        self.pressed = False
+        self.update()
+        super().mouseReleaseEvent(event)
+
+    def paintEvent(self,event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        rect = self.rect()
+
+        bg = QColor(0,0,0,0)
+        if self.pressed:
+            bg = QColor(self.config.theme.active)
+        elif self.hovered:
+            bg = QColor(self.config.theme.hover)
+
+        painter.fillRect(rect,bg)
+
+        #draw border on the left side
+        painter.setPen(QPen(QColor(self.config.theme.show_desktop_border_color),1))
+        painter.drawLine(rect.topLeft(),rect.bottomLeft())
+    
+    def mouseReleaseEvent(self,event):
+        if event.button() == Qt.LeftButton:
+            press_key(win32con.VK_LWIN)
+            tap_key(ord("D"))
+            release_key(win32con.VK_LWIN)
+        super().mouseReleaseEvent(event)

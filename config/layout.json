@@ -1,5 +1,5 @@
 {
     "left": ["start","apps"],
     "center": [],
-    "right": ["clock"]
+    "right": ["clock","show_desktop"]
 }

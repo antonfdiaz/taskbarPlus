@@ -5,7 +5,7 @@ from PySide6.QtGui import *
 from PySide6.QtCore import QTimer
 from src.config import Config
 from src.models import TaskbarItem,WindowEntry
-from src.widgets import ClockWidget,TaskbarAppsBar,TaskbarButton
+from src.widgets import *
 from src.shell import *
 import subprocess
 import win32gui
@@ -107,6 +107,8 @@ class MainWindow(QMainWindow):
                 self.apps_bars.append(widget)
             elif section == "clock":
                 widget = ClockWidget(self.config)
+            elif section == "show_desktop":
+                widget = ShowDesktopButton(self.config)
             else:
                 continue
 
