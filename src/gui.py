@@ -6,7 +6,7 @@ from PySide6.QtCore import QTimer
 from src.config import Config
 from src.models import TaskbarItem,WindowEntry
 from src.widgets import ClockWidget,TaskbarAppsBar,TaskbarButton
-from src.shell import get_app_icon,list_open_windows
+from src.shell import *
 import subprocess
 import win32gui
 import win32con
@@ -44,15 +44,26 @@ class MainWindow(QMainWindow):
 
         self.apps_bar = None
 
+        self.start_btn = None
+        self.search_btn = None
+
         for section in self.config.layout.left:
             if section == "start":
-                start_btn = TaskbarButton(TaskbarItem(id="start",title="Start",icon=QIcon("assets/wlogo.png")),self.config)
-                start_btn.setToolTip("Start")
-                left_layout.addWidget(start_btn)
+                self.start_btn = TaskbarButton(
+                    TaskbarItem(id="start",title="Start",icon=QIcon("assets/wlogo.png")),
+                    self.config
+                )
+                self.start_btn.setToolTip("Start")
+                self.start_btn.clicked.connect(self.on_start_clicked)
+                left_layout.addWidget(self.start_btn)
             elif section == "search":
-                search_btn = TaskbarButton(TaskbarItem(id="search",title="Search",icon=QIcon("assets/search.png")),self.config)
-                search_btn.setToolTip("Search")
-                left_layout.addWidget(search_btn)
+                self.search_btn = TaskbarButton(
+                    TaskbarItem(id="search",title="Search",icon=QIcon("assets/search.png")),
+                    self.config
+                )
+                self.search_btn.setToolTip("Search")
+                self.search_btn.clicked.connect(self.on_search_clicked)
+                left_layout.addWidget(self.search_btn)
             elif section == "apps":
                 items = self.build_taskbar_items()
                 self.apps_bar = TaskbarAppsBar(items,self.config)
@@ -75,6 +86,14 @@ class MainWindow(QMainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.refresh_apps)
         self.timer.start(1500)
+
+    def on_start_clicked(self):
+        tap_key(win32con.VK_LWIN)
+    
+    def on_search_clicked(self):
+        press_key(win32con.VK_LWIN)
+        tap_key(ord("S"))
+        release_key(win32con.VK_LWIN)
 
     def normalize_path(self,path: str | None) -> str | None:
         if not path:

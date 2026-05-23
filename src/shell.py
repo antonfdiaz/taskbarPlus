@@ -4,6 +4,7 @@ from ctypes import wintypes
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
+import win32api
 import win32con
 import win32gui
 import win32process
@@ -116,3 +117,13 @@ def list_open_windows():
 
     win32gui.EnumWindows(callback,None)
     return windows
+
+def press_key(vk: int):
+    win32api.keybd_event(vk,0,0,0)
+
+def release_key(vk: int):
+    win32api.keybd_event(vk,0,win32con.KEYEVENTF_KEYUP,0)
+
+def tap_key(vk: int):
+    press_key(vk)
+    release_key(vk)
