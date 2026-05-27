@@ -82,6 +82,7 @@ class TaskbarButton(QAbstractButton):
         self.item = item
         self.icon = item.icon
         self.hover_icon = item.hover_icon
+        self.active_icon = item.active_icon
         self.hovered = False
         self.pressed = False
         self.hover_progress = 0.0
@@ -165,7 +166,9 @@ class TaskbarButton(QAbstractButton):
             x = (rect.width()-pix_default.width())//2
             y = (rect.height()-pix_default.height())//2
 
-            if self.hover_icon:
+            if (self.pressed or self.item.active) and self.active_icon:
+                painter.drawPixmap(x,y,self.active_icon.pixmap(icon_size,icon_size))
+            elif self.hover_icon:
                 pix_hover = self.hover_icon.pixmap(icon_size,icon_size)
 
                 painter.setOpacity(1.0-self.hover_progress)

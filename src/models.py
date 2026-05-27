@@ -13,6 +13,7 @@ class TaskbarItem:
     title: str
     icon: QIcon
     hover_icon: QIcon | None = None
+    active_icon: QIcon | None = None
     pinned: bool = False
     running: bool = False
     active: bool = False

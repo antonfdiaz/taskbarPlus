@@ -19,18 +19,12 @@
     "clock_format": "hh:mm:ss",
     "date_format": "dd/MM/yyyy",
     "start_icon_transition": {
-        "duration": 100,
+        "duration": 300,
         "easing": "InOutQuad"
     },
-    "start_icon": {
-        "default": "assets/wlogo.png",
-        "hover": "assets/wlogo_hover.png"
-    },
+    "start_icon": "assets/win8pro.png",
     "search_icon": "assets/search.png",
-    "task_view_icon": {
-        "default": "assets/taskview.png",
-        "hover": "assets/taskview_hover.png"
-    },
+    "task_view_icon": "assets/taskview.png",
     "show_desktop_width": 5,
     "show_desktop_border_color": "#cccccc"
 }

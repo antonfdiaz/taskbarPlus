@@ -169,19 +169,47 @@ class MainWindow(QMainWindow):
         button.clicked.connect(handler)
         return button
 
-    def create_button(self,item_id: str,title: str,icon_theme,handler) -> TaskbarButton:
+    def create_button(self,item_id: str,title: str,icon_path: str,handler) -> TaskbarButton:
+        icons = self.load_button_icons(icon_path)
         button = TaskbarButton(
             TaskbarItem(
                 id=item_id,
                 title=title,
-                icon=QIcon(icon_theme.default),
-                hover_icon=QIcon(icon_theme.hover) if icon_theme.hover else None
+                icon=icons[0],
+                hover_icon=icons[1] if len(icons) >= 2 else None,
+                active_icon=icons[2] if len(icons) >= 3 else None
             ),
             self.config
         )
         button.setToolTip(title)
         button.clicked.connect(handler)
         return button
+
+    def load_button_icons(self,path: str) -> list[QIcon]:
+        pixmap = QPixmap(path)
+        if pixmap.isNull():
+            return [QIcon(path)]
+
+        width = pixmap.width()
+        height = pixmap.height()
+
+        if height > width and height % width == 0:
+            frame_size = width
+            frame_count = min(height // width,3)
+            return [
+                QIcon(pixmap.copy(0,frame_size * index,frame_size,frame_size))
+                for index in range(frame_count)
+            ]
+
+        if width > height and width % height == 0:
+            frame_size = height
+            frame_count = min(width // height,3)
+            return [
+                QIcon(pixmap.copy(frame_size * index,0,frame_size,frame_size))
+                for index in range(frame_count)
+            ]
+
+        return [QIcon(path)]
 
     def normalize_path(self,path: str | None) -> str | None:
         if not path:
