@@ -1,5 +1,7 @@
 {
     "taskbar_height": 40,
+    "taskbar_texture": null,
+    "taskbar_texture_mode": "stretch",
     "background": "#202020",
     "foreground": "#ffffff",
     "hover": "#2a2a2a",

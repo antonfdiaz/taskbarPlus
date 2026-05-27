@@ -16,6 +16,8 @@ class LayoutConfig:
 @dataclass
 class ThemeConfig:
     taskbar_height: int
+    taskbar_texture: str | None
+    taskbar_texture_mode: str
     background: str
     foreground: str
     hover: str

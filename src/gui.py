@@ -55,10 +55,19 @@ class MainWindow(QMainWindow):
         central_widget.setObjectName("taskbarRoot")
         self.setCentralWidget(central_widget)
 
+        texture_rule = ""
+        if self.config.theme.taskbar_texture:
+            texture_path = self.config.theme.taskbar_texture.replace("\\", "/")
+            if self.config.theme.taskbar_texture_mode == "stretch":
+                texture_rule = f'border-image: url("{texture_path}") 0 0 0 0 stretch stretch;'
+            elif self.config.theme.taskbar_texture_mode == "tile":
+                texture_rule = f'background-image: url("{texture_path}"); background-repeat: repeat-xy;'
+
         central_widget.setStyleSheet(f"""
             QWidget#taskbarRoot {{
                 background-color: {self.config.theme.background};
                 color: {self.config.theme.foreground};
+                {texture_rule}
             }}
         """)
 
