@@ -161,7 +161,15 @@ class TaskbarButton(QAbstractButton):
 
             painter.fillRect(rect,bg)
 
-            icon_size = self.config.theme.icon_size
+            if self.item.id == "start":
+                icon_size = self.config.theme.start_icon_size
+            elif self.item.id == "search":
+                icon_size = self.config.theme.search_icon_size
+            elif self.item.id == "task_view":
+                icon_size = self.config.theme.task_view_icon_size
+            else:
+                icon_size = self.config.theme.icon_size
+                
             pix_default = self.icon.pixmap(icon_size,icon_size)
             x = (rect.width()-pix_default.width())//2
             y = (rect.height()-pix_default.height())//2

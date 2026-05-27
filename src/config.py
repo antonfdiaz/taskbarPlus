@@ -31,8 +31,11 @@ class ThemeConfig:
     date_format: str
     start_icon_transition: dict
     start_icon: str
+    start_icon_size: int
     search_icon: str
+    search_icon_size: int
     task_view_icon: str
+    task_view_icon_size: int
     show_desktop_width: int
     show_desktop_border_color: str
 

@@ -19,12 +19,15 @@
     "clock_format": "hh:mm:ss",
     "date_format": "dd/MM/yyyy",
     "start_icon_transition": {
-        "duration": 300,
+        "duration": 100,
         "easing": "InOutQuad"
     },
-    "start_icon": "assets/win8pro.png",
+    "start_icon": "assets/start.png",
+    "start_icon_size": 26,
     "search_icon": "assets/search.png",
+    "search_icon_size": 22,
     "task_view_icon": "assets/taskview.png",
+    "task_view_icon_size": 22,
     "show_desktop_width": 5,
     "show_desktop_border_color": "#cccccc"
 }
