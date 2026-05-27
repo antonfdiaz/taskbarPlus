@@ -18,7 +18,14 @@
     "menu_separator_color": "#404040",
     "clock_format": "hh:mm:ss",
     "date_format": "dd/MM/yyyy",
-    "start_icon": "assets/wlogo.png",
+    "start_icon_transition": {
+        "duration": 100,
+        "easing": "InOutQuad"
+    },
+    "start_icon": {
+        "default": "assets/wlogo.png",
+        "hover": "assets/wlogo_hover.png"
+    },
     "search_icon": "assets/search.png",
     "task_view_icon": {
         "default": "assets/taskview.png",

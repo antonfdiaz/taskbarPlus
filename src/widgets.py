@@ -69,6 +69,17 @@ class TaskbarButton(QAbstractButton):
         self.hover_icon = item.hover_icon
         self.hovered = False
         self.pressed = False
+        self.hover_progress = 0.0
+
+        if self.item.id == "start":
+            self.icon_anim = QPropertyAnimation(self,b"hoverProgress",self)
+            transition = getattr(self.config.theme, "start_icon_transition",{}) or {}
+            self.icon_anim.setDuration(transition.get("duration",200))
+            easing_name = transition.get("easing","InOutQuad")
+            self.icon_anim.setEasingCurve(getattr(QEasingCurve,easing_name,QEasingCurve.InOutQuad))
+        else:
+            self.icon_anim = QPropertyAnimation(self,b"hoverProgress",self)
+            self.icon_anim.setDuration(0)
 
         self.setMouseTracking(True)
         self.setFixedSize(
@@ -76,14 +87,33 @@ class TaskbarButton(QAbstractButton):
             self.config.theme.button_height
         )
 
+    def get_hover_progress(self):
+        return self.hover_progress
+
+    def set_hover_progress(self,value):
+        self.hover_progress = float(value)
+        self.update()
+
+    hoverProgress = Property(float,get_hover_progress,set_hover_progress)
+
     def enterEvent(self,event):
         self.hovered = True
+        if self.hover_icon:
+            self.icon_anim.stop()
+            self.icon_anim.setStartValue(self.hover_progress)
+            self.icon_anim.setEndValue(1.0)
+            self.icon_anim.start()
         self.update()
         super().enterEvent(event)
 
     def leaveEvent(self,event):
         self.hovered = False
         self.pressed = False
+        if self.hover_icon:
+            self.icon_anim.stop()
+            self.icon_anim.setStartValue(self.hover_progress)
+            self.icon_anim.setEndValue(0.0)
+            self.icon_anim.start()
         self.update()
         super().leaveEvent(event)
 
@@ -102,38 +132,53 @@ class TaskbarButton(QAbstractButton):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        rect = self.rect()
+        try:
+            rect = self.rect()
 
-        bg = QColor(0,0,0,0)
-        if self.pressed:
-            bg = QColor(self.config.theme.active)
-        elif self.hovered:
-            bg = QColor(self.config.theme.hover)
-        elif self.item.active:
-            bg = QColor(self.config.theme.active)
+            bg = QColor(0,0,0,0)
+            if self.pressed:
+                bg = QColor(self.config.theme.active)
+            elif self.hovered:
+                bg = QColor(self.config.theme.hover)
+            elif self.item.active:
+                bg = QColor(self.config.theme.active)
 
-        painter.fillRect(rect,bg)
+            painter.fillRect(rect,bg)
 
-        icon_size = self.config.theme.icon_size
-        icon = self.hover_icon if self.hovered and self.hover_icon else self.icon
-        pix = icon.pixmap(icon_size,icon_size)
+            icon_size = self.config.theme.icon_size
+            pix_default = self.icon.pixmap(icon_size,icon_size)
+            x = (rect.width()-pix_default.width())//2
+            y = (rect.height()-pix_default.height())//2
 
-        x = (rect.width()-pix.width())//2
-        y = (rect.height()-pix.height())//2
-        painter.drawPixmap(x,y,pix)
+            if self.hover_icon:
+                pix_hover = self.hover_icon.pixmap(icon_size,icon_size)
 
-        self.draw_indicator(painter,rect)
+                painter.setOpacity(1.0-self.hover_progress)
+                painter.drawPixmap(x,y,pix_default)
+
+                painter.setOpacity(self.hover_progress)
+                painter.drawPixmap(x,y,pix_hover)
+
+                painter.setOpacity(1.0)
+            else:
+                painter.drawPixmap(x,y,pix_default)
+
+            self.draw_indicator(painter,rect)
+        finally:
+            painter.end()
 
     def draw_indicator(self,painter: QPainter,rect: QRect):
         if not self.item.running:
             return
-        
+
         indicator_h = 2
         indicator_y = rect.height()-indicator_h
 
         color = self.config.theme.accent
-        #create darker color from accent (hex)
-        darker_color = "#"+''.join([f"{max(0,int(int(self.config.theme.accent[i:i+2],16)*0.7)):02x}" for i in (1,3,5)])
+        darker_color = "#"+"".join(
+            f"{max(0, int(int(self.config.theme.accent[i:i+2],16)*0.7)):02x}"
+            for i in (1,3,5)
+        )
 
         window_count = len(self.item.windows)
 

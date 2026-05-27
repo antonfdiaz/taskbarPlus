@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
 
         texture_rule = ""
         if self.config.theme.taskbar_texture:
-            texture_path = self.config.theme.taskbar_texture.replace("\\", "/")
+            texture_path = self.config.theme.taskbar_texture.replace("\\","/")
             if self.config.theme.taskbar_texture_mode == "stretch":
                 texture_rule = f'border-image: url("{texture_path}") 0 0 0 0 stretch stretch;'
             elif self.config.theme.taskbar_texture_mode == "tile":

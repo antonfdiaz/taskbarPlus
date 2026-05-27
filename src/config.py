@@ -34,6 +34,7 @@ class ThemeConfig:
     menu_separator_color: str
     clock_format: str
     date_format: str
+    start_icon_transition: dict
     start_icon: IconTheme
     search_icon: IconTheme
     task_view_icon: IconTheme
