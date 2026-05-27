@@ -11,6 +11,21 @@ import subprocess
 import win32gui
 import win32con
 
+def theme_color_css(value,fallback="transparent"):
+    if value is None:
+        return "transparent"
+
+    if isinstance(value, str):
+        value = value.strip()
+        if not value or value.lower() == "transparent":
+            return "transparent"
+
+    color = QColor(value)
+    if color.isValid():
+        return color.name(QColor.HexArgb)
+
+    return fallback
+
 class MainWindow(QMainWindow):
     def __init__(self,config: Config):
         super().__init__()
@@ -20,28 +35,30 @@ class MainWindow(QMainWindow):
 
         screen_size = QGuiApplication.primaryScreen().size()
 
+        self.setStyleSheet("background: transparent;")
         self.setWindowTitle("taskbarPlus")
         self.setGeometry(0,screen_size.height()-self.config.theme.taskbar_height,screen_size.width(),self.config.theme.taskbar_height)
         self.setFixedSize(screen_size.width(),self.config.theme.taskbar_height)
+        self.setAttribute(Qt.WA_TranslucentBackground,True)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
 
         self.menu = QMenu(self)
         self.menu.setStyleSheet(f"""
             QMenu {{
-                background-color: {self.config.theme.background};
-                color: {self.config.theme.foreground};
-                border: 1px solid {self.config.theme.foreground};
+                background-color: {theme_color_css(self.config.theme.background)};
+                color: {theme_color_css(self.config.theme.foreground)};
+                border: 1px solid {theme_color_css(self.config.theme.foreground)};
             }}
             QMenu::item {{
                 padding: 8px;
                 padding-right: 80px;
             }}
             QMenu::item:selected {{
-                background-color: {self.config.theme.hover};
+                background-color: {theme_color_css(self.config.theme.hover)};
             }}
             QMenu::separator {{
                 height: 1px;
-                background-color: {self.config.theme.menu_separator_color};
+                background-color: {theme_color_css(self.config.theme.menu_separator_color)};
             }}
         """)
         self.menu.addAction("Task Manager",lambda: launch_windows_app("taskmgr.exe"))
@@ -65,8 +82,8 @@ class MainWindow(QMainWindow):
 
         central_widget.setStyleSheet(f"""
             QWidget#taskbarRoot {{
-                background-color: {self.config.theme.background};
-                color: {self.config.theme.foreground};
+                background-color: {theme_color_css(self.config.theme.background)};
+                color: {theme_color_css(self.config.theme.foreground)};
                 {texture_rule}
             }}
         """)
@@ -282,15 +299,15 @@ class MainWindow(QMainWindow):
         menu = QMenu(self)
         menu.setStyleSheet(f"""
             QMenu {{
-                background-color: {self.config.theme.background};
-                color: {self.config.theme.foreground};
+                background-color: {theme_color_css(self.config.theme.background)};
+                color: {theme_color_css(self.config.theme.foreground)};
             }}
             QMenu::item {{
                 padding: 6px;
                 padding-left: 2px;
             }}
             QMenu::item:selected {{
-                background-color: {self.config.theme.hover};
+                background-color: {theme_color_css(self.config.theme.hover)};
             }}
         """)
 

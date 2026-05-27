@@ -6,6 +6,21 @@ from src.shell import press_key,release_key,tap_key
 from src.config import Config
 from src.models import *
 
+def theme_color(value,fallback="#00000000"):
+    if value is None:
+        return QColor(0,0,0,0)
+
+    if isinstance(value, str):
+        value = value.strip()
+        if not value or value.lower() == "transparent":
+            return QColor(0,0,0,0)
+
+    color = QColor(value)
+    if not color.isValid():
+        return QColor(fallback)
+
+    return color
+
 class TaskbarAppsBar(QWidget):
     itemClicked = Signal(object,object)
 
@@ -135,13 +150,13 @@ class TaskbarButton(QAbstractButton):
         try:
             rect = self.rect()
 
-            bg = QColor(0,0,0,0)
+            bg = theme_color(self.config.theme.background)
             if self.pressed:
-                bg = QColor(self.config.theme.active)
+                bg = theme_color(self.config.theme.active)
             elif self.hovered:
-                bg = QColor(self.config.theme.hover)
+                bg = theme_color(self.config.theme.hover)
             elif self.item.active:
-                bg = QColor(self.config.theme.active)
+                bg = theme_color(self.config.theme.active)
 
             painter.fillRect(rect,bg)
 
@@ -174,7 +189,7 @@ class TaskbarButton(QAbstractButton):
         indicator_h = 2
         indicator_y = rect.height()-indicator_h
 
-        color = self.config.theme.accent
+        color = theme_color(self.config.theme.accent)
         darker_color = "#"+"".join(
             f"{max(0, int(int(self.config.theme.accent[i:i+2],16)*0.7)):02x}"
             for i in (1,3,5)
@@ -236,16 +251,16 @@ class ShowDesktopButton(QAbstractButton):
 
         rect = self.rect()
 
-        bg = QColor(0,0,0,0)
+        bg = theme_color(self.config.theme.background)
         if self.pressed:
-            bg = QColor(self.config.theme.active)
+            bg = theme_color(self.config.theme.active)
         elif self.hovered:
-            bg = QColor(self.config.theme.hover)
+            bg = theme_color(self.config.theme.hover)
 
         painter.fillRect(rect,bg)
 
         #draw border on the left side
-        painter.setPen(QPen(QColor(self.config.theme.show_desktop_border_color),1))
+        painter.setPen(QPen(theme_color(self.config.theme.show_desktop_border_color),1))
         painter.drawLine(rect.topLeft(),rect.bottomLeft())
     
     def mouseReleaseEvent(self,event):
@@ -325,11 +340,11 @@ class TrayIcon(QAbstractButton):
 
         rect = self.rect()
 
-        bg = QColor(0,0,0,0)
+        bg = theme_color(self.config.theme.background)
         if self.pressed:
-            bg = QColor(self.config.theme.active)
+            bg = theme_color(self.config.theme.active)
         elif self.hovered:
-            bg = QColor(self.config.theme.hover)
+            bg = theme_color(self.config.theme.hover)
 
         painter.fillRect(rect,bg)
 
