@@ -453,13 +453,18 @@ class MainWindow(QMainWindow):
             QMenu {{
                 background-color: {theme_color_css(self.config.theme.background)};
                 color: {theme_color_css(self.config.theme.foreground)};
+                border: 1px solid {theme_color_css(self.config.theme.foreground)};
             }}
             QMenu::item {{
-                padding: 6px;
-                padding-left: 2px;
+                padding: 8px;
+                padding-right: 80px;
             }}
             QMenu::item:selected {{
                 background-color: {theme_color_css(self.config.theme.hover)};
+            }}
+            QMenu::separator {{
+                height: 1px;
+                background-color: {theme_color_css(self.config.theme.menu_separator_color)};
             }}
         """)
 

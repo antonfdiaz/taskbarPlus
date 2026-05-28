@@ -2,7 +2,7 @@ from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 import win32con
-from src.shell import press_key,release_key,tap_key
+from src.shell import *
 from src.config import Config
 from src.models import *
 
@@ -167,7 +167,11 @@ class TaskbarButton(QAbstractButton):
                 action = menu.addAction(window.title)
                 action.triggered.connect(lambda checked=False,hwnd=window.hwnd: self.itemAction.emit(self.item,hwnd))
             menu.addSeparator()
+        new_win_action = menu.addAction("Open new window")
+        new_win_action.setIcon(QIcon("assets/add.png").pixmap(15,15))
+        new_win_action.triggered.connect(lambda: launch_windows_app(self.item.launch_path) if self.item.launch_path else None)
         pin_action = menu.addAction("Unpin from taskbar" if self.item.pinned else "Pin to taskbar")
+        pin_action.setIcon(QIcon("assets/pin.png") if not self.item.pinned else QIcon("assets/unpin.png"))
         pin_action.triggered.connect(lambda: self.itemAction.emit(self.item,"pin"))
         menu.exec(self.mapToGlobal(pos))
 
