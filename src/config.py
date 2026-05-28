@@ -19,6 +19,7 @@ class ThemeConfig:
     active: str
     accent: str
     icon_size: int
+    icon_opacity: float
     tray_icon_size: int
     button_width: int
     button_height: int

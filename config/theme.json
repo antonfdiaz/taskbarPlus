@@ -8,6 +8,7 @@
     "active": "#3a3a3a",
     "accent": "#4cc2ff",
     "icon_size": 22,
+    "icon_opacity": 1.0,
     "tray_icon_size": 16,
     "button_width": 46,
     "button_height": 40,

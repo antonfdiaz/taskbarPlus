@@ -175,18 +175,20 @@ class TaskbarButton(QAbstractButton):
             y = (rect.height()-pix_default.height())//2
 
             if (self.pressed or self.item.active) and self.active_icon:
+                painter.setOpacity(self.config.theme.icon_opacity)
                 painter.drawPixmap(x,y,self.active_icon.pixmap(icon_size,icon_size))
             elif self.hover_icon:
                 pix_hover = self.hover_icon.pixmap(icon_size,icon_size)
 
-                painter.setOpacity(1.0-self.hover_progress)
+                painter.setOpacity((1.0-self.hover_progress)*self.config.theme.icon_opacity)
                 painter.drawPixmap(x,y,pix_default)
 
-                painter.setOpacity(self.hover_progress)
+                painter.setOpacity(self.hover_progress*self.config.theme.icon_opacity)
                 painter.drawPixmap(x,y,pix_hover)
 
-                painter.setOpacity(1.0)
+                painter.setOpacity(self.config.theme.icon_opacity)
             else:
+                painter.setOpacity(self.config.theme.icon_opacity)
                 painter.drawPixmap(x,y,pix_default)
 
             self.draw_indicator(painter,rect)
