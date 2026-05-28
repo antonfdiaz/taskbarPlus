@@ -8,6 +8,7 @@ from src.config import Config
 from src.models import *
 from src.widgets import *
 from src.shell import *
+from src.blur import apply_acrylic
 import subprocess
 import win32gui
 import win32con
@@ -45,6 +46,12 @@ class MainWindow(QMainWindow):
         self.setAttribute(Qt.WA_TranslucentBackground,True)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAcceptDrops(True)
+
+        if self.config.theme.taskbar_blur:
+            try:
+                apply_acrylic(int(self.winId()),color=self.config.theme.taskbar_blur_tint,acrylic=True)
+            except Exception as e:
+                print("couldn't apply acrylic blur:",e)
 
         self.menu = QMenu(self)
         self.menu.setStyleSheet(f"""

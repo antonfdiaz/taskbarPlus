@@ -25,7 +25,7 @@ def theme_color(value,fallback="#00000000"):
     if value is None:
         return QColor(0,0,0,0)
 
-    if isinstance(value, str):
+    if isinstance(value,str):
         value = value.strip()
         if not value or value.lower() == "transparent":
             return QColor(0,0,0,0)
