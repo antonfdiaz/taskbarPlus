@@ -15,15 +15,17 @@ import win32con
 
 def theme_color_css(value,fallback="transparent"):
     if value is None:
-        return "transparent"
+        return "#01000000"
 
     if isinstance(value, str):
         value = value.strip()
         if not value or value.lower() == "transparent":
-            return "transparent"
+            return "#01000000"
 
     color = QColor(value)
     if color.isValid():
+        if color.alpha() == 0:
+            return "#01000000"
         return color.name(QColor.HexArgb)
 
     return fallback
