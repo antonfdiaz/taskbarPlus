@@ -25,3 +25,9 @@ class TrayItem:
     id: str
     icon: QIcon
     hover_icon: QIcon | None = None
+    tooltip: str = ""
+    hwnd: int | None = None
+    uid: int | None = None
+    callback_message: int | None = None
+    anchor_x: int = 0
+    anchor_y: int = 0

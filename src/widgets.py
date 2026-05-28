@@ -282,6 +282,9 @@ class ShowDesktopButton(QAbstractButton):
         super().mouseReleaseEvent(event)
 
 class TrayWidget(QWidget):
+    itemClicked = Signal(object)
+    itemRightClicked = Signal(object)
+
     def __init__(self,items: list[TrayIcon],config: Config):
         super().__init__()
         self.config = config
@@ -298,6 +301,10 @@ class TrayWidget(QWidget):
         self.setLayout(self.layout)
         self.rebuild()
 
+    def set_items(self,items: list[TrayIcon]):
+        self.items = items
+        self.rebuild()
+
     def rebuild(self):
         while self.layout.count():
             child = self.layout.takeAt(0)
@@ -306,11 +313,18 @@ class TrayWidget(QWidget):
                 widget.deleteLater()
                 
         for item in self.items:
+            item.clicked.connect(
+                lambda checked=False,item=item.item: self.itemClicked.emit(item)
+            )
+            item.rightClicked.connect(self.itemRightClicked.emit)
             self.layout.addWidget(item)
 
 class TrayIcon(QAbstractButton):
+    rightClicked = Signal(object)
+
     def __init__(self,item: TrayItem,config: Config,parent=None):
         super().__init__(parent)
+        self.item = item
         self.icon = item.icon
         self.hover_icon = item.hover_icon
         self.config = config
@@ -322,6 +336,8 @@ class TrayIcon(QAbstractButton):
             self.config.theme.tray_icon_size+self.config.theme.padding_x,
             self.config.theme.button_height
         )
+        if item.tooltip:
+            self.setToolTip(item.tooltip)
 
     def enterEvent(self,event):
         self.hovered = True
@@ -343,6 +359,14 @@ class TrayIcon(QAbstractButton):
     def mouseReleaseEvent(self,event):
         self.pressed = False
         self.update()
+        anchor = self.mapToGlobal(event.position().toPoint())
+        self.item.anchor_x = anchor.x()
+        self.item.anchor_y = anchor.y()
+
+        if event.button() == Qt.RightButton:
+            self.rightClicked.emit(self.item)
+            event.accept()
+            return
         super().mouseReleaseEvent(event)
 
     def paintEvent(self,event):

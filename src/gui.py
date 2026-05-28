@@ -32,6 +32,8 @@ class MainWindow(QMainWindow):
         self.config: Config = config
         self.dynamic_app_order: list[str] = []
         self.apps_bars: list[TaskbarAppsBar] = []
+        self.tray_widgets: list[TrayWidget] = []
+        self.tray_items: list[TrayItem] = []
 
         screen_size = QGuiApplication.primaryScreen().size()
 
@@ -120,12 +122,6 @@ class MainWindow(QMainWindow):
         tap_key(win32con.VK_TAB)
         release_key(win32con.VK_LWIN)
 
-    def open_network_settings(self):
-        subprocess.run("explorer.exe ms-availablenetworks:",shell=True)
-
-    def open_volume_settings(self):
-        launch_windows_app("sndvol.exe")
-
     def build_section(self,sections: list[str],apps_items: list[TaskbarItem]) -> QWidget:
         container = QWidget()
         section_layout = QHBoxLayout()
@@ -145,11 +141,11 @@ class MainWindow(QMainWindow):
                 widget.itemClicked.connect(self.on_item_clicked)
                 self.apps_bars.append(widget)
             elif section == "tray":
-                tray_items = [
-                    self.create_tray_icon("network","assets/network.png",self.open_network_settings),
-                    self.create_tray_icon("volume","assets/volume.png",self.open_volume_settings)
-                ]
+                tray_items = self.build_tray_items()
                 widget = TrayWidget(tray_items,self.config)
+                widget.itemClicked.connect(self.on_tray_item_clicked)
+                widget.itemRightClicked.connect(self.on_tray_item_right_clicked)
+                self.tray_widgets.append(widget)
             elif section == "clock":
                 widget = ClockWidget(self.config)
             elif section == "show_desktop":
@@ -161,13 +157,48 @@ class MainWindow(QMainWindow):
 
         return container
     
-    def create_tray_icon(self,icon_id: str,icon_path: str,handler) -> TrayIcon:
-        button = TrayIcon(
-            TrayItem(id=icon_id,icon=QIcon(icon_path)),
-            self.config
+    def build_tray_items(self) -> list[TrayIcon]:
+        items = []
+        tray_icons = list_tray_icons()
+
+        if tray_icons:
+            self.tray_items = [
+                self.create_tray_item(item)
+                for item in tray_icons
+            ]
+
+        for item in self.tray_items:
+            items.append(TrayIcon(item,self.config))
+
+        return items
+
+    def create_tray_item(self,item) -> TrayItem:
+        image = QImage.fromHICON(item["hicon"])
+        icon = QIcon(QPixmap.fromImage(image)) if not image.isNull() else QIcon()
+
+        return TrayItem(
+            id=item["id"],
+            icon=icon,
+            tooltip=item["tooltip"],
+            hwnd=item["hwnd"],
+            uid=item["uid"],
+            callback_message=item["callback_message"]
         )
-        button.clicked.connect(handler)
-        return button
+
+    def on_tray_item_clicked(self,item: TrayItem):
+        tooltip = item.tooltip.lower()
+        if any(word in tooltip for word in ("network","internet","wi-fi","wifi","red")):
+            subprocess.Popen(["explorer.exe","ms-availablenetworks:"])
+            return
+
+        if any(word in tooltip for word in ("volume","volumen","speaker","audio","sonido")):
+            launch_windows_app("sndvol.exe")
+            return
+
+        send_tray_icon_click(item,"left")
+
+    def on_tray_item_right_clicked(self,item: TrayItem):
+        send_tray_icon_click(item,"right")
 
     def create_button(self,item_id: str,title: str,icon_path: str,handler) -> TaskbarButton:
         icons = self.load_button_icons(icon_path)
@@ -297,12 +328,17 @@ class MainWindow(QMainWindow):
         return items
     
     def refresh_apps(self):
-        if not self.apps_bars:
+        if not self.apps_bars and not self.tray_widgets:
             return
 
-        items = self.build_taskbar_items()
-        for apps_bar in self.apps_bars:
-            apps_bar.set_items(items)
+        if self.apps_bars:
+            items = self.build_taskbar_items()
+            for apps_bar in self.apps_bars:
+                apps_bar.set_items(items)
+
+        if self.tray_widgets:
+            for tray_widget in self.tray_widgets:
+                tray_widget.set_items(self.build_tray_items())
 
     def on_item_clicked(self,item: TaskbarItem,button: QWidget):
         count = len(item.windows)
