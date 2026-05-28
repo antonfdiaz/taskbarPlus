@@ -278,26 +278,6 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print("couldn't resolve shortcut with win32com:",e)
 
-        try:
-            shortcut_path = str(path).replace("'","''")
-            result = subprocess.run(
-                [
-                    "powershell.exe",
-                    "-NoProfile",
-                    "-Command",
-                    f"$s=(New-Object -ComObject WScript.Shell).CreateShortcut('{shortcut_path}'); $s.TargetPath"
-                ],
-                capture_output=True,
-                text=True,
-                timeout=3,
-                creationflags=getattr(subprocess,"CREATE_NO_WINDOW",0)
-            )
-            target = result.stdout.strip()
-            if result.returncode == 0 and target:
-                return Path(target)
-        except Exception as e:
-            print("couldn't resolve shortcut:",e)
-
         return path
 
     def pin_app_from_path(self,path: str) -> bool:
@@ -327,6 +307,22 @@ class MainWindow(QMainWindow):
         self.config.save_apps()
         self.refresh_apps()
         return True
+
+    def toggle_pinned_app(self,item: TaskbarItem):
+        if not item.launch_path:
+            return
+
+        normalized_path = self.normalize_path(item.launch_path)
+        if item.pinned:
+            self.config.apps.pinned = [
+                app for app in self.config.apps.pinned
+                if self.normalize_path(app.get("path")) != normalized_path
+            ]
+            self.config.save_apps()
+            self.refresh_apps()
+            return
+
+        self.pin_app_from_path(item.launch_path)
 
     def build_taskbar_items(self) -> list[TaskbarItem]:
         items = []
@@ -412,6 +408,9 @@ class MainWindow(QMainWindow):
         if not self.apps_bars and not self.tray_widgets:
             return
 
+        if QApplication.activePopupWidget() is not None:
+            return
+
         if self.apps_bars:
             items = self.build_taskbar_items()
             for apps_bar in self.apps_bars:
@@ -421,7 +420,15 @@ class MainWindow(QMainWindow):
             for tray_widget in self.tray_widgets:
                 tray_widget.set_items(self.build_tray_items())
 
-    def on_item_clicked(self,item: TaskbarItem,button: QWidget):
+    def on_item_clicked(self,item: TaskbarItem,button: object):
+        if button == "pin":
+            self.toggle_pinned_app(item)
+            return
+
+        if isinstance(button,int):
+            self.activate_window(button)
+            return
+
         count = len(item.windows)
 
         if count == 0:

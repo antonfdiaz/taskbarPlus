@@ -4,26 +4,6 @@
             "id": "explorer",
             "title": "Explorer",
             "path": "C:/Windows/explorer.exe"
-        },
-        {
-            "id": "bsnes",
-            "title": "bsnes",
-            "path": "C:/Users/Tonchi/Documents/bsnes-nightly/bsnes.exe"
-        },
-        {
-            "id": "photoshop",
-            "title": "Adobe Photoshop CS6 (64 Bit)",
-            "path": "D:/adobe cs6/Adobe Photoshop CS6 (64 Bit)/Photoshop.exe"
-        },
-        {
-            "id": "everything",
-            "title": "Everything",
-            "path": "C:/Program Files/Everything/Everything.exe"
-        },
-        {
-            "id": "qbittorrent",
-            "title": "qBittorrent",
-            "path": "C:/Program Files/qBittorrent/qbittorrent.exe"
         }
     ]
 }

@@ -6,6 +6,21 @@ from src.shell import press_key,release_key,tap_key
 from src.config import Config
 from src.models import *
 
+def theme_color_css(value,fallback="transparent"):
+    if value is None:
+        return "transparent"
+
+    if isinstance(value, str):
+        value = value.strip()
+        if not value or value.lower() == "transparent":
+            return "transparent"
+
+    color = QColor(value)
+    if color.isValid():
+        return color.name(QColor.HexArgb)
+
+    return fallback
+
 def theme_color(value,fallback="#00000000"):
     if value is None:
         return QColor(0,0,0,0)
@@ -58,6 +73,7 @@ class TaskbarAppsBar(QWidget):
             btn.clicked.connect(
                 lambda checked=False,item=item,btn=btn: self.itemClicked.emit(item,btn)
             )
+            btn.itemAction.connect(self.itemClicked.emit)
             self.layout.addWidget(btn)
 
     def dragEnterEvent(self,event):
@@ -93,6 +109,8 @@ class ClockWidget(QLabel):
         QTimer.singleShot(1000,self.update_time)
 
 class TaskbarButton(QAbstractButton):
+    itemAction = Signal(object,object)
+
     def __init__(self,item: TaskbarItem,config: Config,parent=None):
         super().__init__(parent)
         self.config = config
@@ -103,6 +121,10 @@ class TaskbarButton(QAbstractButton):
         self.hovered = False
         self.pressed = False
         self.hover_progress = 0.0
+
+        #context menu
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.show_context_menu)
 
         if self.item.id == "start":
             self.icon_anim = QPropertyAnimation(self,b"hoverProgress",self)
@@ -119,6 +141,35 @@ class TaskbarButton(QAbstractButton):
             self.config.theme.button_width,
             self.config.theme.button_height
         )
+
+    def show_context_menu(self,pos):
+        menu = QMenu(self)
+        menu.setStyleSheet(f"""
+            QMenu {{
+                background-color: {theme_color_css(self.config.theme.background)};
+                color: {theme_color_css(self.config.theme.foreground)};
+                border: 1px solid {theme_color_css(self.config.theme.foreground)};
+            }}
+            QMenu::item {{
+                padding: 8px;
+                padding-right: 80px;
+            }}
+            QMenu::item:selected {{
+                background-color: {theme_color_css(self.config.theme.hover)};
+            }}
+            QMenu::separator {{
+                height: 1px;
+                background-color: {theme_color_css(self.config.theme.menu_separator_color)};
+            }}
+        """)
+        if self.item.windows:
+            for window in self.item.windows:
+                action = menu.addAction(window.title)
+                action.triggered.connect(lambda checked=False,hwnd=window.hwnd: self.itemAction.emit(self.item,hwnd))
+            menu.addSeparator()
+        pin_action = menu.addAction("Unpin from taskbar" if self.item.pinned else "Pin to taskbar")
+        pin_action.triggered.connect(lambda: self.itemAction.emit(self.item,"pin"))
+        menu.exec(self.mapToGlobal(pos))
 
     def get_hover_progress(self):
         return self.hover_progress
