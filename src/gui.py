@@ -1,5 +1,6 @@
 from collections import defaultdict
 import os
+from pathlib import Path
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import QTimer
@@ -43,6 +44,7 @@ class MainWindow(QMainWindow):
         self.setFixedSize(screen_size.width(),self.config.theme.taskbar_height)
         self.setAttribute(Qt.WA_TranslucentBackground,True)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setAcceptDrops(True)
 
         self.menu = QMenu(self)
         self.menu.setStyleSheet(f"""
@@ -139,6 +141,7 @@ class MainWindow(QMainWindow):
             elif section == "apps":
                 widget = TaskbarAppsBar(apps_items,self.config)
                 widget.itemClicked.connect(self.on_item_clicked)
+                widget.appDropped.connect(self.pin_app_from_path)
                 self.apps_bars.append(widget)
             elif section == "tray":
                 tray_items = self.build_tray_items()
@@ -247,6 +250,84 @@ class MainWindow(QMainWindow):
             return None
         return os.path.normcase(os.path.normpath(path))
 
+    def dragEnterEvent(self,event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+            return
+        super().dragEnterEvent(event)
+
+    def dropEvent(self,event):
+        for url in event.mimeData().urls():
+            path = url.toLocalFile()
+            if path and self.pin_app_from_path(path):
+                event.acceptProposedAction()
+                return
+        super().dropEvent(event)
+
+    def resolve_shortcut_path(self,path: Path) -> Path:
+        if path.suffix.lower() != ".lnk":
+            return path
+
+        try:
+            import win32com.client
+
+            shell = win32com.client.Dispatch("WScript.Shell")
+            shortcut = shell.CreateShortcut(str(path))
+            if shortcut.TargetPath:
+                return Path(shortcut.TargetPath)
+        except Exception as e:
+            print("couldn't resolve shortcut with win32com:",e)
+
+        try:
+            shortcut_path = str(path).replace("'","''")
+            result = subprocess.run(
+                [
+                    "powershell.exe",
+                    "-NoProfile",
+                    "-Command",
+                    f"$s=(New-Object -ComObject WScript.Shell).CreateShortcut('{shortcut_path}'); $s.TargetPath"
+                ],
+                capture_output=True,
+                text=True,
+                timeout=3,
+                creationflags=getattr(subprocess,"CREATE_NO_WINDOW",0)
+            )
+            target = result.stdout.strip()
+            if result.returncode == 0 and target:
+                return Path(target)
+        except Exception as e:
+            print("couldn't resolve shortcut:",e)
+
+        return path
+
+    def pin_app_from_path(self,path: str) -> bool:
+        dropped_path = Path(path)
+        file_path = self.resolve_shortcut_path(dropped_path)
+        if not file_path.exists() or not file_path.is_file():
+            return False
+
+        normalized_path = self.normalize_path(str(file_path))
+        for app in self.config.apps.pinned:
+            if self.normalize_path(app.get("path")) == normalized_path:
+                return False
+
+        app_id = file_path.stem.lower().replace(" ","_")
+        existing_ids = {app.get("id") for app in self.config.apps.pinned}
+        unique_id = app_id
+        counter = 2
+        while unique_id in existing_ids:
+            unique_id = f"{app_id}_{counter}"
+            counter += 1
+
+        self.config.apps.pinned.append({
+            "id": unique_id,
+            "title": dropped_path.stem,
+            "path": str(file_path).replace("\\","/")
+        })
+        self.config.save_apps()
+        self.refresh_apps()
+        return True
+
     def build_taskbar_items(self) -> list[TaskbarItem]:
         items = []
         open_windows = list_open_windows()
@@ -345,7 +426,7 @@ class MainWindow(QMainWindow):
 
         if count == 0:
             if item.launch_path:
-                subprocess.Popen(item.launch_path)
+                launch_windows_app(item.launch_path)
         elif count == 1:
             hwnd = item.windows[0].hwnd
             self.activate_window(hwnd)
@@ -384,7 +465,7 @@ class MainWindow(QMainWindow):
         new_win_action = menu.addAction("Open new window")
         new_win_action.setIcon(QIcon("assets/add.png").pixmap(15,15))
         new_win_action.triggered.connect(
-            lambda checked=False,path=item.launch_path: subprocess.Popen(path) if path else None
+            lambda checked=False,path=item.launch_path: launch_windows_app(path) if path else None
         )
 
         pos = button.mapToGlobal(button.rect().topLeft())

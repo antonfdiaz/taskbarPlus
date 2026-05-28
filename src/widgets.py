@@ -23,11 +23,13 @@ def theme_color(value,fallback="#00000000"):
 
 class TaskbarAppsBar(QWidget):
     itemClicked = Signal(object,object)
+    appDropped = Signal(str)
 
     def __init__(self,items: list[TaskbarItem],config: Config):
         super().__init__()
         self.config = config
         self.items = items
+        self.setAcceptDrops(True)
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
@@ -57,6 +59,21 @@ class TaskbarAppsBar(QWidget):
                 lambda checked=False,item=item,btn=btn: self.itemClicked.emit(item,btn)
             )
             self.layout.addWidget(btn)
+
+    def dragEnterEvent(self,event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+            return
+        super().dragEnterEvent(event)
+
+    def dropEvent(self,event):
+        for url in event.mimeData().urls():
+            path = url.toLocalFile()
+            if path:
+                self.appDropped.emit(path)
+                event.acceptProposedAction()
+                return
+        super().dropEvent(event)
 
 class ClockWidget(QLabel):
     def __init__(self,config: Config):

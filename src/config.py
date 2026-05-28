@@ -46,17 +46,22 @@ class AppsConfig:
 
 class Config:
     def __init__(self,config_dir="config"):
-        config_dir = Path(config_dir)
+        self.config_dir = Path(config_dir)
 
-        with open(config_dir/"layout.json","r",encoding="utf-8") as f:
+        with open(self.config_dir/"layout.json","r",encoding="utf-8") as f:
             layout_data = json.load(f)
 
-        with open(config_dir/"theme.json","r",encoding="utf-8") as f:
+        with open(self.config_dir/"theme.json","r",encoding="utf-8") as f:
             theme_data = json.load(f)
 
-        with open(config_dir/"apps.json","r",encoding="utf-8") as f:
+        with open(self.config_dir/"apps.json","r",encoding="utf-8") as f:
             apps_data = json.load(f)
 
         self.layout = LayoutConfig(**layout_data)
         self.theme = ThemeConfig(**theme_data)
         self.apps = AppsConfig(**apps_data)
+
+    def save_apps(self):
+        with open(self.config_dir/"apps.json","w",encoding="utf-8") as f:
+            json.dump({"pinned": self.apps.pinned},f,indent=4)
+            f.write("\n")
