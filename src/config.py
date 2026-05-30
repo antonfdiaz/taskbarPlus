@@ -29,7 +29,6 @@ class ThemeConfig:
     padding_y: int
     gap: int
     tray_gap: int
-    menu_separator_color: str
     clock_format: str
     date_format: str
     start_icon_transition: dict
@@ -41,6 +40,10 @@ class ThemeConfig:
     task_view_icon_size: int
     show_desktop_width: int
     show_desktop_border_color: str
+    menu_background: str
+    menu_foreground: str
+    menu_hover: str
+    menu_separator_color: str
 
 @dataclass
 class AppsConfig:

@@ -5,36 +5,7 @@ import win32con
 from src.shell import *
 from src.config import Config
 from src.models import *
-
-def theme_color_css(value,fallback="transparent"):
-    if value is None:
-        return "transparent"
-
-    if isinstance(value, str):
-        value = value.strip()
-        if not value or value.lower() == "transparent":
-            return "transparent"
-
-    color = QColor(value)
-    if color.isValid():
-        return color.name(QColor.HexArgb)
-
-    return fallback
-
-def theme_color(value,fallback="#00000000"):
-    if value is None:
-        return QColor(0,0,0,0)
-
-    if isinstance(value,str):
-        value = value.strip()
-        if not value or value.lower() == "transparent":
-            return QColor(0,0,0,0)
-
-    color = QColor(value)
-    if not color.isValid():
-        return QColor(fallback)
-
-    return color
+from src.utils import menu_style,theme_color
 
 class TaskbarAppsBar(QWidget):
     itemClicked = Signal(object,object)
@@ -144,24 +115,7 @@ class TaskbarButton(QAbstractButton):
 
     def show_context_menu(self,pos):
         menu = QMenu(self)
-        menu.setStyleSheet(f"""
-            QMenu {{
-                background-color: {theme_color_css(self.config.theme.background)};
-                color: {theme_color_css(self.config.theme.foreground)};
-                border: 1px solid {theme_color_css(self.config.theme.foreground)};
-            }}
-            QMenu::item {{
-                padding: 8px;
-                padding-right: 80px;
-            }}
-            QMenu::item:selected {{
-                background-color: {theme_color_css(self.config.theme.hover)};
-            }}
-            QMenu::separator {{
-                height: 1px;
-                background-color: {theme_color_css(self.config.theme.menu_separator_color)};
-            }}
-        """)
+        menu.setStyleSheet(menu_style(self.config))
         if self.item.windows:
             for window in self.item.windows:
                 action = menu.addAction(window.title)

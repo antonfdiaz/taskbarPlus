@@ -18,7 +18,6 @@
     "padding_y": 4,
     "gap": 0,
     "tray_gap": 0,
-    "menu_separator_color": "#404040",
     "clock_format": "hh:mm:ss",
     "date_format": "dd/MM/yyyy",
     "start_icon_transition": {
@@ -32,5 +31,9 @@
     "task_view_icon": "assets/taskview.png",
     "task_view_icon_size": 22,
     "show_desktop_width": 5,
-    "show_desktop_border_color": "#cccccc"
+    "show_desktop_border_color": "#cccccc",
+    "menu_background": "#202020",
+    "menu_foreground": "#ffffff",
+    "menu_hover": "#55555555",
+    "menu_separator_color": "#404040"
 }

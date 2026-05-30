@@ -12,23 +12,7 @@ from src.blur import apply_acrylic
 import subprocess
 import win32gui
 import win32con
-
-def theme_color_css(value,fallback="transparent"):
-    if value is None:
-        return "#01000000"
-
-    if isinstance(value, str):
-        value = value.strip()
-        if not value or value.lower() == "transparent":
-            return "#01000000"
-
-    color = QColor(value)
-    if color.isValid():
-        if color.alpha() == 0:
-            return "#01000000"
-        return color.name(QColor.HexArgb)
-
-    return fallback
+from src.utils import theme_color_css,menu_style
 
 class MainWindow(QMainWindow):
     def __init__(self,config: Config):
@@ -56,24 +40,7 @@ class MainWindow(QMainWindow):
                 print("couldn't apply acrylic blur:",e)
 
         self.menu = QMenu(self)
-        self.menu.setStyleSheet(f"""
-            QMenu {{
-                background-color: {theme_color_css(self.config.theme.background)};
-                color: {theme_color_css(self.config.theme.foreground)};
-                border: 1px solid {theme_color_css(self.config.theme.foreground)};
-            }}
-            QMenu::item {{
-                padding: 8px;
-                padding-right: 80px;
-            }}
-            QMenu::item:selected {{
-                background-color: {theme_color_css(self.config.theme.hover)};
-            }}
-            QMenu::separator {{
-                height: 1px;
-                background-color: {theme_color_css(self.config.theme.menu_separator_color)};
-            }}
-        """)
+        self.menu.setStyleSheet(menu_style(self.config))
         self.menu.addAction("Task Manager",lambda: launch_windows_app("taskmgr.exe"))
         self.menu.addSeparator()
         self.menu.addAction("Refresh",self.refresh_apps)
@@ -458,24 +425,7 @@ class MainWindow(QMainWindow):
 
     def show_windows_menu(self,item: TaskbarItem,button: QWidget):
         menu = QMenu(self)
-        menu.setStyleSheet(f"""
-            QMenu {{
-                background-color: {theme_color_css(self.config.theme.background)};
-                color: {theme_color_css(self.config.theme.foreground)};
-                border: 1px solid {theme_color_css(self.config.theme.foreground)};
-            }}
-            QMenu::item {{
-                padding: 8px;
-                padding-right: 80px;
-            }}
-            QMenu::item:selected {{
-                background-color: {theme_color_css(self.config.theme.hover)};
-            }}
-            QMenu::separator {{
-                height: 1px;
-                background-color: {theme_color_css(self.config.theme.menu_separator_color)};
-            }}
-        """)
+        menu.setStyleSheet(menu_style(self.config))
 
         for window in item.windows:
             action = menu.addAction(window.title)
