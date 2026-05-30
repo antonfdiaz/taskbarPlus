@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+#nuitka
+main.build
+main.dist
+main.onefile-build
+.nuitka-cache/
+nuitka-crash-report.xml
