@@ -1,4 +1,5 @@
 from __future__ import annotations
+import subprocess
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
@@ -7,6 +8,7 @@ from src.shell import *
 from src.config import Config
 from src.models import *
 from src.utils import menu_style,theme_color
+from threading import Thread
 
 class TaskbarAppsBar(QWidget):
     itemClicked = Signal(object,object)
@@ -448,6 +450,8 @@ class SearchBox(QLineEdit):
             self.config.theme.search_box_width+self.config.theme.padding_x*2,
             self.config.theme.search_box_height
         )
+        self.setClearButtonEnabled(self.config.theme.search_box_clear_button)
+        self.addAction(QIcon(self.config.theme.search_icon).pixmap(self.config.theme.search_icon_size,self.config.theme.search_icon_size),QLineEdit.LeadingPosition)
         self.setStyleSheet(f"""
             background-color: {self.config.theme.search_box_background};
             color: {self.config.theme.search_box_foreground};
@@ -456,3 +460,29 @@ class SearchBox(QLineEdit):
             padding: {self.config.theme.padding_y}px {self.config.theme.padding_x}px;
         """)
         self.setPlaceholderText("Type here to search")
+
+    def focusOutEvent(self,event):
+        self.clear()
+        super().focusOutEvent(event)
+
+    def keyPressEvent(self,event):
+        if event.key() == Qt.Key_Escape:
+            self.clear()
+            self.clearFocus()
+            event.accept()
+            return
+        elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+            query = self.text().strip()
+            if query:
+                self.launch_search(query)
+            self.clear()
+            self.clearFocus()
+            event.accept()
+            return
+        super().keyPressEvent(event)
+
+    def launch_search(self,query):
+        #use shell to launch search
+        if self.config.theme.search_engine == "everything":
+            thread = Thread(target=lambda: subprocess.run(f'"{self.config.theme.everything_path}" -search "{query}"',shell=True))
+            thread.start()
