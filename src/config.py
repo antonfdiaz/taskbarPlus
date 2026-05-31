@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 @dataclass
@@ -66,7 +66,29 @@ class Config:
         self.theme = ThemeConfig(**theme_data)
         self.apps = AppsConfig(**apps_data)
 
+    def save_theme(self):
+        with open(self.config_dir/"theme.json","w",encoding="utf-8") as f:
+            json.dump(asdict(self.theme),f,indent=4)
+            f.write("\n")
+
+    def save_layout(self):
+        with open(self.config_dir/"layout.json","w",encoding="utf-8") as f:
+            json.dump(asdict(self.layout),f,indent=4)
+            f.write("\n")
+
     def save_apps(self):
         with open(self.config_dir/"apps.json","w",encoding="utf-8") as f:
-            json.dump({"pinned": self.apps.pinned},f,indent=4)
+            json.dump(asdict(self.apps),f,indent=4)
             f.write("\n")
+
+    def save(self, section: str | None = None):
+        if section == "theme":
+            self.save_theme()
+        elif section == "layout":
+            self.save_layout()
+        elif section == "apps":
+            self.save_apps()
+        else:
+            self.save_theme()
+            self.save_layout()
+            self.save_apps()

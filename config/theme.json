@@ -1,9 +1,9 @@
 {
     "taskbar_height": 40,
-    "taskbar_texture": null,
+    "taskbar_texture": "C:/Users/Tonchi/Documents/taskbarPlus/assets/taskbar_w7.png",
     "taskbar_texture_mode": "stretch",
     "taskbar_blur": true,
-    "taskbar_blur_tint": "#CC202020",
+    "taskbar_blur_tint": "#cc202020",
     "background": "#00000000",
     "foreground": "#ffffff",
     "hover": "#55555555",
