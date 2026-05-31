@@ -109,10 +109,26 @@ class TaskbarButton(QAbstractButton):
             self.icon_anim.setDuration(0)
 
         self.setMouseTracking(True)
-        self.setFixedSize(
-            self.config.theme.button_width,
-            self.config.theme.button_height
-        )
+        if item.id == "start":
+            self.setFixedSize(
+                self.config.theme.start_button_width,
+                self.config.theme.start_button_height
+            )
+        elif item.id == "search":
+            self.setFixedSize(
+                self.config.theme.search_button_width,
+                self.config.theme.search_button_height
+            )
+        elif item.id == "task_view":
+            self.setFixedSize(
+                self.config.theme.task_view_button_width,
+                self.config.theme.task_view_button_height
+            )
+        else:
+            self.setFixedSize(
+                self.config.theme.button_width,
+                self.config.theme.button_height
+            )
 
     def show_context_menu(self,pos):
         menu = QMenu(self)

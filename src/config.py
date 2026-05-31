@@ -34,10 +34,16 @@ class ThemeConfig:
     start_icon_transition: dict
     start_icon: str
     start_icon_size: int
+    start_button_width: int
+    start_button_height: int
     search_icon: str
     search_icon_size: int
+    search_button_width: int
+    search_button_height: int
     task_view_icon: str
     task_view_icon_size: int
+    task_view_button_width: int
+    task_view_button_height: int
     show_desktop_width: int
     show_desktop_border_color: str
     menu_background: str
