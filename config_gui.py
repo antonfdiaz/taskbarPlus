@@ -1,9 +1,18 @@
 import json
+import ctypes
+from ctypes import wintypes
 from pathlib import Path
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 from src.config import Config
+
+try:
+    import win32con
+    import win32gui
+except ImportError:
+    win32con = None
+    win32gui = None
 
 SECTIONS = ("theme","layout","apps")
 SIDEBAR_WIDTH = 300
@@ -11,6 +20,76 @@ SIDEBAR_COLOR = "#e6e6e6"
 OPTIONS = {
     "taskbar_texture_mode": ("stretch","tile"),
 }
+
+DWMWA_NCRENDERING_POLICY = 2
+DWMNCRP_ENABLED = 2
+WM_NCCALCSIZE = 0x0083
+
+class POINT(ctypes.Structure):
+    _fields_ = [
+        ("x",wintypes.LONG),
+        ("y",wintypes.LONG),
+    ]
+
+class MSG(ctypes.Structure):
+    _fields_ = [
+        ("hwnd",wintypes.HWND),
+        ("message",wintypes.UINT),
+        ("wParam",wintypes.WPARAM),
+        ("lParam",wintypes.LPARAM),
+        ("time",wintypes.DWORD),
+        ("pt",POINT),
+    ]
+
+class MARGINS(ctypes.Structure):
+    _fields_ = [
+        ("cxLeftWidth",ctypes.c_int),
+        ("cxRightWidth",ctypes.c_int),
+        ("cyTopHeight",ctypes.c_int),
+        ("cyBottomHeight",ctypes.c_int),
+    ]
+
+def enable_dwm_frame(hwnd: int):
+    if win32con is None or win32gui is None:
+        return
+
+    style = win32gui.GetWindowLong(hwnd,win32con.GWL_STYLE)
+    style |= (
+        win32con.WS_CAPTION
+        | win32con.WS_THICKFRAME
+        | win32con.WS_SYSMENU
+        | win32con.WS_MINIMIZEBOX
+        | win32con.WS_MAXIMIZEBOX
+    )
+    win32gui.SetWindowLong(hwnd,win32con.GWL_STYLE,style)
+
+    policy = ctypes.c_int(DWMNCRP_ENABLED)
+    ctypes.windll.dwmapi.DwmSetWindowAttribute(
+        wintypes.HWND(hwnd),
+        DWMWA_NCRENDERING_POLICY,
+        ctypes.byref(policy),
+        ctypes.sizeof(policy),
+    )
+
+    margins = MARGINS(1,1,1,1)
+    ctypes.windll.dwmapi.DwmExtendFrameIntoClientArea(
+        wintypes.HWND(hwnd),
+        ctypes.byref(margins),
+    )
+
+    win32gui.SetWindowPos(
+        hwnd,
+        None,
+        0,
+        0,
+        0,
+        0,
+        win32con.SWP_NOMOVE
+        | win32con.SWP_NOSIZE
+        | win32con.SWP_NOZORDER
+        | win32con.SWP_NOOWNERZORDER
+        | win32con.SWP_FRAMECHANGED,
+    )
 
 class UwpToggle(QCheckBox):
     def __init__(self, checked=False):
@@ -245,6 +324,7 @@ class ConfigGui(QWidget):
         super().__init__()
         self.config = config
         self.nullable = self.find_nullable_fields()
+        self.dwm_frame_enabled = False
 
         self.setWindowTitle("taskbarPlus Config")
         self.setMinimumSize(880,560)
@@ -341,6 +421,28 @@ class ConfigGui(QWidget):
         root.setSpacing(0)
         root.addWidget(TitleBar(self))
         root.addLayout(content, 1)
+
+    def showEvent(self,event):
+        super().showEvent(event)
+        if self.dwm_frame_enabled:
+            return
+
+        try:
+            enable_dwm_frame(int(self.winId()))
+            self.dwm_frame_enabled = True
+        except Exception as error:
+            print("couldn't enable config window DWM frame:",error)
+
+    def nativeEvent(self,event_type,message):
+        try:
+            msg = MSG.from_address(int(message))
+        except Exception:
+            return super().nativeEvent(event_type,message)
+
+        if msg.message == WM_NCCALCSIZE and msg.wParam:
+            return True,0
+
+        return super().nativeEvent(event_type,message)
 
     def sidebar(self):
         panel = QWidget()
