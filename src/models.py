@@ -1,5 +1,5 @@
 from __future__ import annotations
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon,QPixmap
 from dataclasses import dataclass,field
 
 @dataclass
@@ -15,6 +15,9 @@ class TaskbarItem:
     icon: QIcon
     hover_icon: QIcon | None = None
     active_icon: QIcon | None = None
+    icon_pixmap: QPixmap | None = None
+    hover_icon_pixmap: QPixmap | None = None
+    active_icon_pixmap: QPixmap | None = None
     pinned: bool = False
     running: bool = False
     active: bool = False

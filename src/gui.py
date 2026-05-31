@@ -188,14 +188,18 @@ class MainWindow(QMainWindow):
         send_tray_icon_click(item,"right")
 
     def create_button(self,item_id: str,title: str,icon_path: str,handler) -> TaskbarButton:
-        icons = self.load_button_icons(icon_path)
+        pixmaps = self.load_button_pixmaps(icon_path,item_id)
+        icons = [QIcon(pixmap) for pixmap in pixmaps] if pixmaps else [QIcon(icon_path)]
         button = TaskbarButton(
             TaskbarItem(
                 id=item_id,
                 title=title,
                 icon=icons[0],
                 hover_icon=icons[1] if len(icons) >= 2 else None,
-                active_icon=icons[2] if len(icons) >= 3 else None
+                active_icon=icons[2] if len(icons) >= 3 else None,
+                icon_pixmap=pixmaps[0] if len(pixmaps) >= 1 else None,
+                hover_icon_pixmap=pixmaps[1] if len(pixmaps) >= 2 else None,
+                active_icon_pixmap=pixmaps[2] if len(pixmaps) >= 3 else None
             ),
             self.config
         )
@@ -203,19 +207,24 @@ class MainWindow(QMainWindow):
         button.clicked.connect(handler)
         return button
 
-    def load_button_icons(self,path: str) -> list[QIcon]:
+    def load_button_pixmaps(self,path: str,item_id: str) -> list[QPixmap]:
         pixmap = QPixmap(path)
         if pixmap.isNull():
-            return [QIcon(path)]
+            return []
 
         width = pixmap.width()
         height = pixmap.height()
+
+        if item_id == "start":
+            animated_frames = self.load_animated_start_button_frames(pixmap)
+            if animated_frames:
+                return animated_frames
 
         if height > width and height % width == 0:
             frame_size = width
             frame_count = min(height // width,3)
             return [
-                QIcon(pixmap.copy(0,frame_size * index,frame_size,frame_size))
+                pixmap.copy(0,frame_size * index,frame_size,frame_size)
                 for index in range(frame_count)
             ]
 
@@ -223,11 +232,86 @@ class MainWindow(QMainWindow):
             frame_size = height
             frame_count = min(width // height,3)
             return [
-                QIcon(pixmap.copy(frame_size * index,0,frame_size,frame_size))
+                pixmap.copy(frame_size * index,0,frame_size,frame_size)
                 for index in range(frame_count)
             ]
 
-        return [QIcon(path)]
+        if item_id == "start" and width != height:
+            start_frames = self.load_start_button_frames(pixmap)
+            if start_frames:
+                return start_frames
+
+        return [pixmap]
+
+    def load_start_button_frames(self,pixmap: QPixmap) -> list[QPixmap]:
+        width = pixmap.width()
+        height = pixmap.height()
+        candidates = []
+
+        if height % 3 == 0:
+            frame_height = height // 3
+            if frame_height > 0:
+                candidates.append((
+                    abs((width / frame_height) - (self.config.theme.start_button_width / self.config.theme.start_button_height)),
+                    [
+                        pixmap.copy(0,frame_height * index,width,frame_height)
+                        for index in range(3)
+                    ]
+                ))
+
+        if width % 3 == 0:
+            frame_width = width // 3
+            if frame_width > 0:
+                candidates.append((
+                    abs((frame_width / height) - (self.config.theme.start_button_width / self.config.theme.start_button_height)),
+                    [
+                        pixmap.copy(frame_width * index,0,frame_width,height)
+                        for index in range(3)
+                    ]
+                ))
+
+        if not candidates:
+            return []
+
+        candidates.sort(key=lambda candidate: candidate[0])
+        return candidates[0][1]
+
+    def load_animated_start_button_frames(self,pixmap: QPixmap) -> list[QPixmap]:
+        image = pixmap.toImage()
+        if image.width() < 6 or image.height() < 2:
+            return []
+
+        if (
+            image.pixelColor(0,0).getRgb()[:3] != (65,78,77) or
+            image.pixelColor(1,0).getRgb()[:3] != (66,84,78)
+        ):
+            return []
+
+        frame_info = image.pixelColor(2,0)
+        description_rows = frame_info.red()
+        frame_count = frame_info.blue()
+        if description_rows <= 0 or frame_count <= 0:
+            return []
+
+        frames_height = image.height() - description_rows
+        if frames_height <= 0 or frames_height % frame_count != 0:
+            return []
+
+        frame_height = frames_height // frame_count
+        if frame_height <= 0:
+            return []
+
+        state_indexes = [
+            image.pixelColor(index,0).blue()
+            for index in range(3,6)
+        ]
+        if any(index >= frame_count for index in state_indexes):
+            return []
+
+        return [
+            pixmap.copy(0,description_rows + frame_height * index,image.width(),frame_height)
+            for index in state_indexes
+        ]
 
     def normalize_path(self,path: str | None) -> str | None:
         if not path:
