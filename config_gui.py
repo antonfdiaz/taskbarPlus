@@ -12,7 +12,7 @@ OPTIONS = {
     "taskbar_texture_mode": ("stretch","tile"),
 }
 
-class W10Toggle(QCheckBox):
+class UwpToggle(QCheckBox):
     def __init__(self, checked=False):
         super().__init__()
         self.setChecked(checked)
@@ -386,7 +386,7 @@ class ConfigGui(QWidget):
 
     def editor_for(self, section, key, value):
         if isinstance(value, bool):
-            editor = W10Toggle(value)
+            editor = UwpToggle(value)
             editor.toggled.connect(lambda checked: self.set_value(section, key, checked))
             return editor
 

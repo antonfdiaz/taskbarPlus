@@ -1,6 +1,6 @@
 {
     "taskbar_height": 40,
-    "taskbar_texture": "C:/Users/Tonchi/Documents/taskbarPlus/assets/taskbar_w7.png",
+    "taskbar_texture": null,
     "taskbar_texture_mode": "stretch",
     "taskbar_blur": true,
     "taskbar_blur_tint": "#cc202020",
