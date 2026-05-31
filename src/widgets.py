@@ -102,13 +102,12 @@ class TaskbarButton(QAbstractButton):
         self.pressed = False
         self.hover_progress = 0.0
 
-        #context menu
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
         if self.item.id == "start":
             self.icon_anim = QPropertyAnimation(self,b"hoverProgress",self)
-            transition = getattr(self.config.theme, "start_icon_transition",{}) or {}
+            transition = getattr(self.config.theme,"start_icon_transition",{}) or {}
             self.icon_anim.setDuration(transition.get("duration",200))
             easing_name = transition.get("easing","InOutQuad")
             self.icon_anim.setEasingCurve(getattr(QEasingCurve,easing_name,QEasingCurve.InOutQuad))
@@ -204,9 +203,9 @@ class TaskbarButton(QAbstractButton):
 
             bg = theme_color(self.config.theme.background)
             if self.pressed:
-                bg = theme_color(self.config.theme.active)
+                bg = theme_color(self.config.theme.start_button_active if self.item.id == "start" else self.config.theme.active)
             elif self.hovered:
-                bg = theme_color(self.config.theme.hover)
+                bg = theme_color(self.config.theme.start_button_hover if self.item.id == "start" else self.config.theme.hover)
             elif self.item.active:
                 bg = theme_color(self.config.theme.active)
 

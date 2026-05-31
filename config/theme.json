@@ -28,6 +28,8 @@
     "start_icon_size": 20,
     "start_button_width": 101,
     "start_button_height": 30,
+    "start_button_hover": "#00000000",
+    "start_button_active": "#00000000",
     "search_mode": "icon",
     "search_engine": "windows_search",
     "search_icon": "assets/search.png",

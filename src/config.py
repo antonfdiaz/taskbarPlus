@@ -36,6 +36,8 @@ class ThemeConfig:
     start_icon_size: int
     start_button_width: int
     start_button_height: int
+    start_button_hover: str
+    start_button_active: str
     search_mode: str
     search_engine: str
     search_icon: str
