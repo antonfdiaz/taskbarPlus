@@ -36,10 +36,15 @@ class ThemeConfig:
     start_icon_size: int
     start_button_width: int
     start_button_height: int
+    search_mode: str
     search_icon: str
     search_icon_size: int
     search_button_width: int
     search_button_height: int
+    search_box_width: int
+    search_box_height: int
+    search_box_background: str
+    search_box_foreground: str
     task_view_icon: str
     task_view_icon_size: int
     task_view_button_width: int

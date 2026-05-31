@@ -17,6 +17,7 @@ class TaskbarAppsBar(QWidget):
         self.config = config
         self.items = items
         self.setAcceptDrops(True)
+        self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
@@ -47,6 +48,8 @@ class TaskbarAppsBar(QWidget):
             )
             btn.itemAction.connect(self.itemClicked.emit)
             self.layout.addWidget(btn)
+
+        self.adjustSize()
 
     def dragEnterEvent(self,event):
         if event.mimeData().hasUrls():
@@ -435,3 +438,21 @@ class TrayIcon(QAbstractButton):
         x = (rect.width()-pix.width())//2
         y = (rect.height()-pix.height())//2
         painter.drawPixmap(x,y,pix)
+
+class SearchBox(QLineEdit):
+    def __init__(self,config: Config):
+        super().__init__()
+        self.config = config
+        self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
+        self.setFixedSize(
+            self.config.theme.search_box_width+self.config.theme.padding_x*2,
+            self.config.theme.search_box_height
+        )
+        self.setStyleSheet(f"""
+            background-color: {self.config.theme.search_box_background};
+            color: {self.config.theme.search_box_foreground};
+            border: none;
+            font-size: 16px;
+            padding: {self.config.theme.padding_y}px {self.config.theme.padding_x}px;
+        """)
+        self.setPlaceholderText("Type here to search")

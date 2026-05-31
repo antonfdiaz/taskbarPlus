@@ -112,7 +112,10 @@ class MainWindow(QMainWindow):
             if section == "start":
                 widget = self.create_button("start","Start",self.config.theme.start_icon,self.on_start_clicked)
             elif section == "search":
-                widget = self.create_button("search","Search",self.config.theme.search_icon,self.on_search_clicked)
+                if self.config.theme.search_mode == "box":
+                    widget = SearchBox(self.config)
+                elif self.config.theme.search_mode == "icon":
+                    widget = self.create_button("search","Search",self.config.theme.search_icon,self.on_search_clicked)
             elif section == "task_view":
                 widget = self.create_button("task_view","Task View",self.config.theme.task_view_icon,self.on_task_view_clicked)
             elif section == "apps":
