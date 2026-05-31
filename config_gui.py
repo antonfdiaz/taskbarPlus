@@ -20,10 +20,69 @@ SIDEBAR_COLOR = "#e6e6e6"
 OPTIONS = {
     "taskbar_texture_mode": ("stretch","tile"),
 }
+SCROLLBAR_STYLE = """
+    QScrollBar:vertical {
+        width: 12px;
+        margin: 0;
+        border: 0;
+        background: transparent;
+    }
+    QScrollBar::handle:vertical {
+        min-height: 36px;
+        border: 0;
+        background: #8f8f8f;
+    }
+    QScrollBar::handle:vertical:hover {
+        background: #6f6f6f;
+    }
+    QScrollBar::handle:vertical:pressed {
+        background: #555555;
+    }
+    QScrollBar::add-line:vertical,
+    QScrollBar::sub-line:vertical,
+    QScrollBar::add-page:vertical,
+    QScrollBar::sub-page:vertical {
+        height: 0;
+        border: 0;
+        background: transparent;
+    }
+    QScrollBar:horizontal {
+        height: 12px;
+        margin: 0;
+        border: 0;
+        background: transparent;
+    }
+    QScrollBar::handle:horizontal {
+        min-width: 36px;
+        border: 0;
+        background: #8f8f8f;
+    }
+    QScrollBar::handle:horizontal:hover {
+        background: #6f6f6f;
+    }
+    QScrollBar::handle:horizontal:pressed {
+        background: #555555;
+    }
+    QScrollBar::add-line:horizontal,
+    QScrollBar::sub-line:horizontal,
+    QScrollBar::add-page:horizontal,
+    QScrollBar::sub-page:horizontal {
+        width: 0;
+        border: 0;
+        background: transparent;
+    }
+"""
 
 DWMWA_NCRENDERING_POLICY = 2
 DWMNCRP_ENABLED = 2
 WM_NCCALCSIZE = 0x0083
+
+def default_windows_qt_style():
+    available = {name.lower(): name for name in QStyleFactory.keys()}
+    for name in ("windows11","windowsvista","fusion"):
+        if name in available:
+            return QStyleFactory.create(available[name])
+    return None
 
 class POINT(ctypes.Structure):
     _fields_ = [
@@ -325,15 +384,22 @@ class ConfigGui(QWidget):
         self.config = config
         self.nullable = self.find_nullable_fields()
         self.dwm_frame_enabled = False
+        self.default_qt_style = default_windows_qt_style()
 
+        self.setObjectName("configRoot")
         self.setWindowTitle("taskbarPlus Config")
         self.setMinimumSize(880,560)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
+        if self.default_qt_style is not None:
+            self.setStyle(self.default_qt_style)
 
         self.setStyleSheet("""
             QWidget {
                 font-family: "Segoe UI",sans-serif;
                 font-size: 14px;
+            }
+            QWidget#configRoot,
+            QWidget#page {
                 background-color: #fff;
             }
             QWidget#sidebar {
@@ -457,6 +523,7 @@ class ConfigGui(QWidget):
 
     def section_page(self, section_name):
         page = QWidget()
+        page.setObjectName("page")
         page_layout = QVBoxLayout(page)
         page_layout.setContentsMargins(40, 38, 70, 30)
         page_layout.setSpacing(0)
@@ -483,8 +550,14 @@ class ConfigGui(QWidget):
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
+        scroll.viewport().setStyleSheet("background-color: #ffffff;")
         scroll.setWidget(page)
+        self.apply_default_scrollbar_style(scroll)
         return scroll
+
+    def apply_default_scrollbar_style(self,scroll):
+        for bar in (scroll.verticalScrollBar(),scroll.horizontalScrollBar()):
+            bar.setStyleSheet(SCROLLBAR_STYLE)
 
     def editor_for(self, section, key, value):
         if isinstance(value, bool):
