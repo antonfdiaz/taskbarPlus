@@ -92,9 +92,13 @@ class MainWindow(QMainWindow):
         tap_key(win32con.VK_LWIN)
     
     def on_search_clicked(self):
-        press_key(win32con.VK_LWIN)
-        tap_key(ord("S"))
-        release_key(win32con.VK_LWIN)
+        if self.config.theme.search_engine == "everything":
+            thread = Thread(target=lambda: subprocess.run(f'"{self.config.theme.everything_path}"',shell=True))
+            thread.start()
+        elif self.config.theme.search_engine == "windows_search":
+            press_key(win32con.VK_LWIN)
+            tap_key(ord("S"))
+            release_key(win32con.VK_LWIN)
 
     def on_task_view_clicked(self):
         press_key(win32con.VK_LWIN)
