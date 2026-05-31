@@ -29,7 +29,7 @@
     "start_button_width": 48,
     "start_button_height": 40,
     "search_mode": "box",
-    "search_engine": "everything",
+    "search_engine": "windows_search",
     "search_icon": "assets/search_dark.png",
     "search_icon_size": 22,
     "search_button_width": 48,

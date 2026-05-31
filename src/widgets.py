@@ -461,6 +461,11 @@ class SearchBox(QLineEdit):
         """)
         self.setPlaceholderText("Type here to search")
 
+    def focusInEvent(self,event):
+        super().focusInEvent(event)
+        if self.config.theme.search_engine == "windows_search":
+            self.launch_search("")
+
     def focusOutEvent(self,event):
         self.clear()
         super().focusOutEvent(event)
@@ -481,8 +486,12 @@ class SearchBox(QLineEdit):
             return
         super().keyPressEvent(event)
 
-    def launch_search(self,query):
-        #use shell to launch search
+    def launch_search(self,query=""):
         if self.config.theme.search_engine == "everything":
             thread = Thread(target=lambda: subprocess.run(f'"{self.config.theme.everything_path}" -search "{query}"',shell=True))
             thread.start()
+        elif self.config.theme.search_engine == "windows_search":
+            self.clearFocus()
+            press_key(win32con.VK_LWIN)
+            tap_key(ord("S"))
+            release_key(win32con.VK_LWIN)
