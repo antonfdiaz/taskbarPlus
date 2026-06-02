@@ -31,7 +31,7 @@
     "start_button_hover": "#55555555",
     "start_button_active": "#44444444",
     "search_mode": "box",
-    "search_engine": "windows_search",
+    "search_engine": "everything",
     "search_icon": "assets/search_dark.png",
     "search_icon_size": 20,
     "search_button_width": 36,

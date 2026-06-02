@@ -19,6 +19,8 @@ SIDEBAR_WIDTH = 300
 SIDEBAR_COLOR = "#e6e6e6"
 OPTIONS = {
     "taskbar_texture_mode": ("stretch","tile"),
+    "search_mode": ("box","icon"),
+    "search_engine": ("windows_search","everything"),
 }
 SCROLLBAR_STYLE = """
     QScrollBar:vertical {
