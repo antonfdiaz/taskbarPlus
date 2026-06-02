@@ -157,20 +157,25 @@ class UwpToggle(QCheckBox):
         self.setFixedSize(self.sizeHint())
 
     def sizeHint(self):
-        return QSize(46, 22)
+        return QSize(46,22)
 
-    def hitButton(self, pos):
+    def hitButton(self,pos):
         return self.rect().contains(pos)
 
-    def paintEvent(self, event):
+    def paintEvent(self,event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
         checked = self.isChecked()
-        track = self.rect().adjusted(1, 1, -1, -1)
+        hovered = self.underMouse()
+        track = self.rect().adjusted(1,1,-1,-1)
         track_color = QColor("#0078d4" if checked else "#ffffff")
         border_color = QColor("#0078d4" if checked else "#333333")
         knob_color = QColor("#ffffff" if checked else "#333333")
+        if hovered:
+            track_color = track_color.lighter(120) if checked else track_color.darker(110)
+            border_color = border_color.lighter(120) if checked else border_color.darker(110)
+            knob_color = knob_color.lighter(120) if checked else knob_color.darker(110)
 
         painter.setPen(QPen(border_color, 2))
         painter.setBrush(track_color)
