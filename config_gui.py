@@ -481,10 +481,19 @@ class ConfigGui(QWidget):
         self.nav.setCurrentRow(0)
         self.nav.currentRowChanged.connect(self.pages.setCurrentIndex)
 
+        sidebar = QWidget()
+        sidebar.setObjectName("sidebar")
+        sidebar.setFixedWidth(SIDEBAR_WIDTH)
+
+        sidebar_layout = QVBoxLayout(sidebar)
+        sidebar_layout.setContentsMargins(0, 8,0,0)
+        sidebar_layout.setSpacing(18)
+        sidebar_layout.addWidget(self.nav,1)
+
         content = QHBoxLayout()
         content.setContentsMargins(0,0,0,0)
         content.setSpacing(0)
-        content.addWidget(self.sidebar())
+        content.addWidget(sidebar)
         content.addWidget(self.pages,1)
 
         root = QVBoxLayout(self)
@@ -515,17 +524,6 @@ class ConfigGui(QWidget):
 
         return super().nativeEvent(event_type,message)
 
-    def sidebar(self):
-        panel = QWidget()
-        panel.setObjectName("sidebar")
-        panel.setFixedWidth(SIDEBAR_WIDTH)
-
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(0, 8,0,0)
-        layout.setSpacing(18)
-        layout.addWidget(self.nav,1)
-        return panel
-
     def section_page(self,section_name):
         page = QWidget()
         page.setObjectName("page")
@@ -546,7 +544,7 @@ class ConfigGui(QWidget):
 
         section = getattr(self.config, section_name)
         for key,value in section.__dict__.items():
-            label = QLabel(self.label_text(key))
+            label = QLabel(key.replace("_", " ").capitalize())
             label.setObjectName("fieldLabel")
             form.addRow(label, self.editor_for(section_name,key,value))
 
@@ -557,12 +555,9 @@ class ConfigGui(QWidget):
         scroll.setWidgetResizable(True)
         scroll.viewport().setStyleSheet("background-color: #ffffff;")
         scroll.setWidget(page)
-        self.apply_default_scrollbar_style(scroll)
-        return scroll
-
-    def apply_default_scrollbar_style(self,scroll):
         for bar in (scroll.verticalScrollBar(),scroll.horizontalScrollBar()):
             bar.setStyleSheet(SCROLLBAR_STYLE)
+        return scroll
 
     def editor_for(self, section, key, value):
         if isinstance(value, bool):
@@ -593,7 +588,7 @@ class ConfigGui(QWidget):
         if key in OPTIONS:
             return self.combo_editor(section,key,value)
 
-        if self.is_color(value):
+        if isinstance(value, str) and value.startswith("#") and len(value) in (7, 9):
             return self.color_editor(section,key,value)
 
         return self.text_editor(section,key,value)
@@ -613,27 +608,40 @@ class ConfigGui(QWidget):
 
         pick = UwpButton("Color")
         pick.clicked.connect(lambda: self.pick_color(section, key, editor))
-        return self.row(editor, pick)
+        row = QWidget()
+        layout = QHBoxLayout(row)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(editor)
+        layout.addWidget(pick)
+        return row
 
     def text_editor(self, section,key,value):
         editor = QLineEdit("" if value is None else str(value))
         editor.setMinimumWidth(260)
         editor.setMaximumWidth(420)
-        editor.editingFinished.connect(lambda: self.set_value(section,key,self.text_value(section,key,editor)))
+        editor.editingFinished.connect(
+            lambda: self.set_value(
+                section,
+                key,
+                None if editor.text() == "" and (section, key) in self.nullable else editor.text(),
+            )
+        )
 
-        if not self.is_path_field(key,value) or key.endswith("_format"):
+        if key.endswith("_format") or not (
+            key.lower() == "path"
+            or key.lower().endswith("_icon")
+            or key.lower().endswith("_texture")
+            or (isinstance(value, str) and ("/" in value or "\\" in value))
+        ):
             return editor
 
         browse = UwpButton("Browse")
         browse.clicked.connect(lambda: self.pick_file(section,key,editor))
-        return self.row(editor, browse)
-
-    def row(self, *widgets):
         row = QWidget()
         layout = QHBoxLayout(row)
         layout.setContentsMargins(0, 0, 0, 0)
-        for widget in widgets:
-            layout.addWidget(widget)
+        layout.addWidget(editor)
+        layout.addWidget(browse)
         return row
 
     def json_editor(self, section, key, value):
@@ -685,10 +693,6 @@ class ConfigGui(QWidget):
         setattr(getattr(self.config, section), key, value)
         self.config.save(section)
 
-    def text_value(self, section, key, editor):
-        text = editor.text()
-        return None if text == "" and (section, key) in self.nullable else text
-
     def find_nullable_fields(self):
         return {
             (section_name, key)
@@ -696,18 +700,6 @@ class ConfigGui(QWidget):
             for key, value in getattr(self.config, section_name).__dict__.items()
             if value is None
         }
-
-    def is_path_field(self, key, value):
-        key = key.lower()
-        return key == "path" or key.endswith("_icon") or key.endswith("_texture") or (
-            isinstance(value, str) and ("/" in value or "\\" in value)
-        )
-
-    def is_color(self, value):
-        return isinstance(value, str) and value.startswith("#") and len(value) in (7, 9)
-
-    def label_text(self, key):
-        return key.replace("_", " ").capitalize()
 
 if __name__ == "__main__":
     app = QApplication([])
