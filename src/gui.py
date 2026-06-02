@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, Qt, Signal
 from src.config import Config
 from src.models import *
 from src.widgets import *
@@ -16,6 +16,8 @@ import win32con
 from src.utils import theme_color_css,menu_style
 
 class MainWindow(QMainWindow):
+    configReloadRequested = Signal()
+
     def __init__(self,config: Config):
         super().__init__()
         self.config: Config = config
@@ -23,7 +25,16 @@ class MainWindow(QMainWindow):
         self.apps_bars: list[TaskbarAppsBar] = []
         self.tray_widgets: list[TrayWidget] = []
         self.tray_items: list[TrayItem] = []
+        self.configReloadRequested.connect(self.reload_from_disk)
 
+        self.setup_window()
+        self.rebuild_ui()
+
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.refresh_apps)
+        self.timer.start(1500)
+
+    def setup_window(self):
         screen_size = QGuiApplication.primaryScreen().size()
 
         self.setStyleSheet("background: transparent;")
@@ -48,6 +59,23 @@ class MainWindow(QMainWindow):
         self.menu.addAction("Exit",self.close)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(lambda pos: self.menu.exec(self.mapToGlobal(pos)))
+
+    def rebuild_ui(self):
+        self.apps_bars = []
+        self.tray_widgets = []
+        self.tray_items = []
+
+        screen_size = QGuiApplication.primaryScreen().size()
+        self.setGeometry(0,screen_size.height()-self.config.theme.taskbar_height,screen_size.width(),self.config.theme.taskbar_height)
+        self.setFixedSize(screen_size.width(),self.config.theme.taskbar_height)
+
+        if self.config.theme.taskbar_blur:
+            try:
+                apply_acrylic(int(self.winId()),color=self.config.theme.taskbar_blur_tint,acrylic=True)
+            except Exception as e:
+                print("couldn't apply acrylic blur:",e)
+
+        self.menu.setStyleSheet(menu_style(self.config))
 
         central_widget = QWidget()
         central_widget.setObjectName("taskbarRoot")
@@ -84,9 +112,12 @@ class MainWindow(QMainWindow):
         layout.addStretch()
         layout.addWidget(right_container)
 
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.refresh_apps)
-        self.timer.start(1500)
+    def reload_from_disk(self):
+        if QApplication.activePopupWidget() is not None:
+            return
+
+        self.config = Config()
+        self.rebuild_ui()
 
     def on_start_clicked(self):
         tap_key(win32con.VK_LWIN)
