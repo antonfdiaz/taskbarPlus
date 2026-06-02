@@ -165,7 +165,7 @@ class MainWindow(QMainWindow):
                 widget.itemRightClicked.connect(self.on_tray_item_right_clicked)
                 self.tray_widgets.append(widget)
             elif section == "clock":
-                widget = ClockWidget(self.config)
+                widget = ClockWidget(self.config,show_date=self.config.theme.clock_date_visible,show_time=self.config.theme.clock_time_visible)
             elif section == "show_desktop":
                 widget = ShowDesktopButton(self.config)
             else:

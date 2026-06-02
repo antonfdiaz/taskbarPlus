@@ -18,8 +18,10 @@
     "padding_y": 4,
     "gap": 0,
     "tray_gap": 0,
-    "clock_format": "hh:mm:ss",
-    "date_format": "dd/MM/yyyy",
+    "clock_time_format": "hh:mm:ss",
+    "clock_date_format": "dd/MM/yyyy",
+    "clock_time_visible": true,
+    "clock_date_visible": false,
     "start_icon_transition": {
         "duration": 100,
         "easing": "InOutQuad"

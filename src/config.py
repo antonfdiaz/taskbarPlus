@@ -29,8 +29,10 @@ class ThemeConfig:
     padding_y: int
     gap: int
     tray_gap: int
-    clock_format: str
-    date_format: str
+    clock_time_format: str
+    clock_date_format: str
+    clock_time_visible: bool
+    clock_date_visible: bool
     start_icon_transition: dict
     start_icon: str
     start_icon_size: int

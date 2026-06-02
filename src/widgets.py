@@ -69,9 +69,11 @@ class TaskbarAppsBar(QWidget):
         super().dropEvent(event)
 
 class ClockWidget(QLabel):
-    def __init__(self,config: Config):
+    def __init__(self,config: Config,show_date=True,show_time=True):
         super().__init__()
         self.config = config
+        self.show_date = show_date
+        self.show_time = show_time
         self.setAlignment(Qt.AlignCenter)
         self.setStyleSheet(f"""
             color: {self.config.theme.foreground};
@@ -80,9 +82,16 @@ class ClockWidget(QLabel):
         self.update_time()
 
     def update_time(self):
-        current_time = QTime.currentTime().toString(self.config.theme.clock_format)
-        current_date = QDate.currentDate().toString(self.config.theme.date_format)
-        self.setText(current_time+"\n"+current_date)
+        current_time = QTime.currentTime().toString(self.config.theme.clock_time_format)
+        current_date = QDate.currentDate().toString(self.config.theme.clock_date_format)
+        text = ""
+        if self.show_time:
+            text += current_time
+        if self.show_date:
+            if text:
+                text += "\n"
+            text += current_date
+        self.setText(text)
         QTimer.singleShot(1000,self.update_time)
 
 class TaskbarButton(QAbstractButton):
