@@ -403,7 +403,7 @@ class ConfigGui(QWidget):
                 background-color: #fff;
             }
             QWidget#sidebar {
-                background-color: """ + SIDEBAR_COLOR + """;
+                background-color: """+SIDEBAR_COLOR+""";
             }
             QLabel#appTitle {
                 background-color: transparent;
@@ -477,16 +477,16 @@ class ConfigGui(QWidget):
         self.nav.currentRowChanged.connect(self.pages.setCurrentIndex)
 
         content = QHBoxLayout()
-        content.setContentsMargins(0, 0, 0, 0)
+        content.setContentsMargins(0,0,0,0)
         content.setSpacing(0)
         content.addWidget(self.sidebar())
-        content.addWidget(self.pages, 1)
+        content.addWidget(self.pages,1)
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(0, 0, 0, 0)
+        root.setContentsMargins(0,0,0,0)
         root.setSpacing(0)
         root.addWidget(TitleBar(self))
-        root.addLayout(content, 1)
+        root.addLayout(content,1)
 
     def showEvent(self,event):
         super().showEvent(event)
@@ -516,16 +516,16 @@ class ConfigGui(QWidget):
         panel.setFixedWidth(SIDEBAR_WIDTH)
 
         layout = QVBoxLayout(panel)
-        layout.setContentsMargins(0, 18, 0, 0)
+        layout.setContentsMargins(0, 8,0,0)
         layout.setSpacing(18)
         layout.addWidget(self.nav,1)
         return panel
 
-    def section_page(self, section_name):
+    def section_page(self,section_name):
         page = QWidget()
         page.setObjectName("page")
         page_layout = QVBoxLayout(page)
-        page_layout.setContentsMargins(40, 38, 70, 30)
+        page_layout.setContentsMargins(20,25,70,30)
         page_layout.setSpacing(0)
 
         title = QLabel(section_name.title())
@@ -540,10 +540,10 @@ class ConfigGui(QWidget):
         form.setVerticalSpacing(18)
 
         section = getattr(self.config, section_name)
-        for key, value in section.__dict__.items():
+        for key,value in section.__dict__.items():
             label = QLabel(self.label_text(key))
             label.setObjectName("fieldLabel")
-            form.addRow(label, self.editor_for(section_name, key, value))
+            form.addRow(label, self.editor_for(section_name,key,value))
 
         page_layout.addLayout(form)
         page_layout.addStretch()
@@ -565,35 +565,35 @@ class ConfigGui(QWidget):
             editor.toggled.connect(lambda checked: self.set_value(section, key, checked))
             return editor
 
-        if isinstance(value, int):
+        if isinstance(value,int):
             editor = UwpSpinBox()
             editor.setRange(-100000, 100000)
             editor.setValue(value)
             editor.setFixedWidth(140)
-            editor.valueChanged.connect(lambda number: self.set_value(section, key, number))
+            editor.valueChanged.connect(lambda number: self.set_value(section,key,number))
             return editor
 
         if isinstance(value, float):
             editor = UwpDoubleSpinBox()
-            editor.setRange(-100000.0, 100000.0)
+            editor.setRange(-100000.0,100000.0)
             editor.setDecimals(3)
             editor.setValue(value)
             editor.setFixedWidth(140)
-            editor.valueChanged.connect(lambda number: self.set_value(section, key, number))
+            editor.valueChanged.connect(lambda number: self.set_value(section,key,number))
             return editor
 
-        if isinstance(value, (list, dict)):
-            return self.json_editor(section, key, value)
+        if isinstance(value,(list,dict)):
+            return self.json_editor(section,key,value)
 
         if key in OPTIONS:
-            return self.combo_editor(section, key, value)
+            return self.combo_editor(section,key,value)
 
         if self.is_color(value):
-            return self.color_editor(section, key, value)
+            return self.color_editor(section,key,value)
 
-        return self.text_editor(section, key, value)
+        return self.text_editor(section,key,value)
 
-    def combo_editor(self, section, key, value):
+    def combo_editor(self,section,key,value):
         editor = UwpComboBox()
         editor.addItems(OPTIONS[key])
         editor.setCurrentText(str(value))
@@ -601,7 +601,7 @@ class ConfigGui(QWidget):
         editor.currentTextChanged.connect(lambda text: self.set_value(section, key, text))
         return editor
 
-    def color_editor(self, section, key, value):
+    def color_editor(self,section,key,value):
         editor = QLineEdit(value)
         editor.setFixedWidth(170)
         editor.editingFinished.connect(lambda: self.set_value(section, key, editor.text()))
@@ -610,17 +610,17 @@ class ConfigGui(QWidget):
         pick.clicked.connect(lambda: self.pick_color(section, key, editor))
         return self.row(editor, pick)
 
-    def text_editor(self, section, key, value):
+    def text_editor(self, section,key,value):
         editor = QLineEdit("" if value is None else str(value))
         editor.setMinimumWidth(260)
         editor.setMaximumWidth(420)
-        editor.editingFinished.connect(lambda: self.set_value(section, key, self.text_value(section, key, editor)))
+        editor.editingFinished.connect(lambda: self.set_value(section,key,self.text_value(section,key,editor)))
 
-        if not self.is_path_field(key, value):
+        if not self.is_path_field(key,value) or key.endswith("_format"):
             return editor
 
         browse = UwpButton("Browse")
-        browse.clicked.connect(lambda: self.pick_file(section, key, editor))
+        browse.clicked.connect(lambda: self.pick_file(section,key,editor))
         return self.row(editor, browse)
 
     def row(self, *widgets):
@@ -637,12 +637,12 @@ class ConfigGui(QWidget):
         editor.setMinimumWidth(360)
         editor.setMaximumWidth(520)
 
-        apply_button = UwpButton("Apply")
-        apply_button.clicked.connect(lambda: self.apply_json(section, key, editor))
+        apply_button = UwpButton("Apply JSON")
+        apply_button.clicked.connect(lambda: self.apply_json(section,key,editor))
 
         box = QWidget()
         layout = QVBoxLayout(box)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(0,0,0,0)
         layout.addWidget(editor)
         layout.addWidget(apply_button)
         return box
