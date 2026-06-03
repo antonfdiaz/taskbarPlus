@@ -12,7 +12,7 @@ if __name__ == "__main__":
     config = Config()
 
     window = MainWindow(config)
-    observer.set_on_config_change(window.configReloadRequested.emit)
+    observer.set_on_config_change(window.config_reload_requested.emit)
     window.show()
     window.closeEvent = lambda event: show_taskbar()
 

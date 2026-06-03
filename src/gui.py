@@ -1,22 +1,22 @@
 from __future__ import annotations
 from collections import defaultdict
-import os
 from pathlib import Path
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
-from PySide6.QtCore import QTimer, Qt, Signal
+from PySide6.QtCore import QTimer,Qt,Signal
 from src.config import Config
 from src.models import *
 from src.widgets import *
 from src.shell import *
 from src.blur import apply_acrylic
+from src.utils import theme_color_css,menu_style
 import subprocess
 import win32gui
 import win32con
-from src.utils import theme_color_css,menu_style
+import os
 
 class MainWindow(QMainWindow):
-    configReloadRequested = Signal()
+    config_reload_requested = Signal()
 
     def __init__(self,config: Config):
         super().__init__()
@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):
         self.apps_bars: list[TaskbarAppsBar] = []
         self.tray_widgets: list[TrayWidget] = []
         self.tray_items: list[TrayItem] = []
-        self.configReloadRequested.connect(self.reload_from_disk)
+        self.config_reload_requested.connect(self.reload_from_disk)
 
         self.setup_window()
         self.rebuild_ui()
