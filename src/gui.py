@@ -55,10 +55,42 @@ class MainWindow(QMainWindow):
         self.menu.setStyleSheet(menu_style(self.config))
         self.menu.addAction("Task Manager",lambda: launch_windows_app("taskmgr.exe"))
         self.menu.addSeparator()
+        self.skins_menu = self.create_skins_menu()
+        self.menu.addMenu(self.skins_menu)
         self.menu.addAction("Refresh",self.refresh_apps)
         self.menu.addAction("Exit",self.close)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(lambda pos: self.menu.exec(self.mapToGlobal(pos)))
+
+    def create_skins_menu(self) -> QMenu:
+        skins_menu = QMenu("Skins",self)
+        skins_menu.setStyleSheet(menu_style(self.config))
+
+        skins_dir = self.config.config_dir/"skins"
+        if not skins_dir.exists():
+            return skins_menu
+
+        for skin_dir in skins_dir.iterdir():
+            if not skin_dir.is_dir():
+                continue
+
+            action = skins_menu.addAction(skin_dir.name)
+            action.setCheckable(True)
+            action.setChecked(skin_dir.name == self.config.settings.skin)
+            action.triggered.connect(lambda checked=False,skin=skin_dir.name: self.change_skin(skin))
+
+        return skins_menu
+    
+    def change_skin(self,skin_name: str):
+        if skin_name == self.config.settings.skin:
+            return
+
+        for action in self.skins_menu.actions():
+            action.setChecked(action.text() == skin_name)
+            
+        self.config.settings.skin = skin_name
+        self.config.save_settings()
+        self.reload_from_disk()
 
     def rebuild_ui(self):
         self.apps_bars = []
