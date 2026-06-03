@@ -1,10 +1,11 @@
 from __future__ import annotations
 from collections import defaultdict
+import json
 from pathlib import Path
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import QTimer,Qt,Signal
-from src.config import Config
+from src.config import Config, SkinMetadata
 from src.models import *
 from src.widgets import *
 from src.shell import *
@@ -57,14 +58,16 @@ class MainWindow(QMainWindow):
         self.menu.addSeparator()
         self.skins_menu = self.create_skins_menu()
         self.menu.addMenu(self.skins_menu)
-        self.menu.addAction("Refresh",self.refresh_apps)
-        self.menu.addAction("Exit",self.close)
+        self.menu.addAction("Refresh",self.rebuild_ui).setIcon(QIcon("assets/refresh.png").pixmap(16,16))
+        self.menu.addAction("Exit",self.close).setIcon(QIcon("assets/close.png").pixmap(16,16))
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(lambda pos: self.menu.exec(self.mapToGlobal(pos)))
 
     def create_skins_menu(self) -> QMenu:
         skins_menu = QMenu("Skins",self)
         skins_menu.setStyleSheet(menu_style(self.config))
+        skins_menu.setToolTipsVisible(True)
+        skins_menu.setIcon(QIcon("assets/skin.png").pixmap(16,16))
 
         skins_dir = self.config.config_dir/"skins"
         if not skins_dir.exists():
@@ -74,7 +77,18 @@ class MainWindow(QMainWindow):
             if not skin_dir.is_dir():
                 continue
 
-            action = skins_menu.addAction(skin_dir.name)
+            metadata_path = skin_dir/"metadata.json"
+            if not metadata_path.exists():
+                continue
+            else:
+                try:
+                    metadata = SkinMetadata(**json.loads(metadata_path.read_text(encoding="utf-8")))
+                except Exception as e:
+                    print(f"couldn't load skin metadata from {metadata_path}:",e)
+                    continue
+
+            action = skins_menu.addAction(metadata.name)
+            action.setToolTip(f"Author: {metadata.author}\nVersion: {metadata.version}")
             action.setCheckable(True)
             action.setChecked(skin_dir.name == self.config.settings.skin)
             action.triggered.connect(lambda checked=False,skin=skin_dir.name: self.change_skin(skin))
@@ -87,7 +101,7 @@ class MainWindow(QMainWindow):
 
         for action in self.skins_menu.actions():
             action.setChecked(action.text() == skin_name)
-            
+
         self.config.settings.skin = skin_name
         self.config.save_settings()
         self.reload_from_disk()
