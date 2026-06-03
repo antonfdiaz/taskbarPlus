@@ -79,51 +79,78 @@ class BehaviorConfig:
     clock: ClockBehaviorConfig = field(default_factory=ClockBehaviorConfig)
     search: SearchBehaviorConfig = field(default_factory=SearchBehaviorConfig)
 
+@dataclass
+class SettingsConfig:
+    skin: str = "default"
+
+@dataclass
+class SkinMetadata:
+    id: str
+    name: str
+    author: str
+    version: str
+
 class Config:
     def __init__(self,config_dir="config"):
         self.config_dir = Path(config_dir)
 
-        with open(self.config_dir/"layout.json","r",encoding="utf-8") as f:
-            layout_data = json.load(f)
+        #load user config
+        with open(self.config_dir/"user"/"settings.json","r",encoding="utf-8") as f:
+            settings_data = json.load(f)
 
-        with open(self.config_dir/"theme.json","r",encoding="utf-8") as f:
-            theme_data = json.load(f)
-
-        with open(self.config_dir/"apps.json","r",encoding="utf-8") as f:
+        with open(self.config_dir/"user"/"apps.json","r",encoding="utf-8") as f:
             apps_data = json.load(f)
 
-        with open(self.config_dir / "behavior.json", "r", encoding="utf-8") as f:
+        with open(self.config_dir/"user"/"behavior.json","r",encoding="utf-8") as f:
             behavior_data = json.load(f)
 
-        self.layout = LayoutConfig(**layout_data)
-        self.theme = ThemeConfig(**theme_data)
+        self.settings = SettingsConfig(**settings_data)
         self.apps = AppsConfig(**apps_data)
         self.behavior = BehaviorConfig(
-            clock=ClockBehaviorConfig(**behavior_data.get("clock", {})),
-            search=SearchBehaviorConfig(**behavior_data.get("search", {})),
+            clock=ClockBehaviorConfig(**behavior_data.get("clock",{})),
+            search=SearchBehaviorConfig(**behavior_data.get("search",{})),
         )
 
+        #load skin config + metadata
+        with open(self.config_dir/"skins"/self.settings.skin/"metadata.json","r",encoding="utf-8") as f:
+            skin_md_data = json.load(f)
+
+        with open(self.config_dir/"skins"/self.settings.skin/"layout.json","r",encoding="utf-8") as f:
+            layout_data = json.load(f)
+
+        with open(self.config_dir/"skins"/self.settings.skin/"theme.json","r",encoding="utf-8") as f:
+            theme_data = json.load(f)
+
+        self.skin_metadata = SkinMetadata(**skin_md_data)
+        self.layout = LayoutConfig(**layout_data)
+        self.theme = ThemeConfig(**theme_data)
+
     def save_theme(self):
-        with open(self.config_dir/"theme.json","w",encoding="utf-8") as f:
+        with open(self.config_dir/"skins"/self.settings.skin/"theme.json","w",encoding="utf-8") as f:
             json.dump(asdict(self.theme),f,indent=4)
             f.write("\n")
 
     def save_layout(self):
-        with open(self.config_dir/"layout.json","w",encoding="utf-8") as f:
+        with open(self.config_dir/"skins"/self.settings.skin/"layout.json","w",encoding="utf-8") as f:
             json.dump(asdict(self.layout),f,indent=4)
             f.write("\n")
 
     def save_apps(self):
-        with open(self.config_dir/"apps.json","w",encoding="utf-8") as f:
+        with open(self.config_dir/"user"/"apps.json","w",encoding="utf-8") as f:
             json.dump(asdict(self.apps),f,indent=4)
             f.write("\n")
 
     def save_behavior(self):
-        with open(self.config_dir/"behavior.json","w",encoding="utf-8") as f:
+        with open(self.config_dir/"user"/"behavior.json","w",encoding="utf-8") as f:
             json.dump(asdict(self.behavior),f,indent=4)
             f.write("\n")
+    
+    def save_settings(self):
+        with open(self.config_dir/"user"/"settings.json","w",encoding="utf-8") as f:
+            json.dump(asdict(self.settings),f,indent=4)
+            f.write("\n")
 
-    def save(self, section: str | None = None):
+    def save(self,section: str | None = None):
         if section == "theme":
             self.save_theme()
         elif section == "layout":
@@ -132,8 +159,11 @@ class Config:
             self.save_apps()
         elif section == "behavior":
             self.save_behavior()
+        elif section == "settings":
+            self.save_settings()
         else:
             self.save_theme()
             self.save_layout()
             self.save_apps()
             self.save_behavior()
+            self.save_settings()
