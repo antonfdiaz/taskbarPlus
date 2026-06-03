@@ -14,7 +14,7 @@ except ImportError:
     win32con = None
     win32gui = None
 
-SECTIONS = ("theme","layout","apps")
+SECTIONS = ("theme","layout","skin_metadata")
 SIDEBAR_WIDTH = 300
 SIDEBAR_COLOR = "#e6e6e6"
 OPTIONS = {
@@ -394,8 +394,8 @@ class ConfigGui(QWidget):
         self.default_qt_style = default_windows_qt_style()
 
         self.setObjectName("configRoot")
-        self.setWindowTitle("taskbarPlus Config")
-        self.setMinimumSize(880,560)
+        self.setWindowTitle("taskbarPlus Theme Config")
+        self.setMinimumSize(1000,650)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         if self.default_qt_style is not None:
             self.setStyle(self.default_qt_style)
@@ -477,7 +477,10 @@ class ConfigGui(QWidget):
         self.nav = QListWidget()
 
         for name in SECTIONS:
-            self.nav.addItem(name.title())
+            if name == "skin_metadata":
+                self.nav.addItem("Metadata")
+            else:
+                self.nav.addItem(name.title())
             self.pages.addWidget(self.section_page(name))
 
         self.nav.setCurrentRow(0)
@@ -533,7 +536,7 @@ class ConfigGui(QWidget):
         page_layout.setContentsMargins(20,25,70,30)
         page_layout.setSpacing(0)
 
-        title = QLabel(section_name.title())
+        title = QLabel("Metadata" if section_name == "skin_metadata" else section_name.title())
         title.setObjectName("pageTitle")
         page_layout.addWidget(title)
 
@@ -544,7 +547,8 @@ class ConfigGui(QWidget):
         form.setHorizontalSpacing(28)
         form.setVerticalSpacing(18)
 
-        section = getattr(self.config, section_name)
+        section = getattr(self.config,section_name)
+
         for key,value in section.__dict__.items():
             label = QLabel(key.replace("_", " ").capitalize())
             label.setObjectName("fieldLabel")
