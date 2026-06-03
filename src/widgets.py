@@ -32,6 +32,19 @@ class TaskbarAppsBar(QWidget):
         self.items = items
         self.rebuild()
 
+    def set_active_window(self,hwnd: int):
+        for index,item in enumerate(self.items):
+            item.active = any(window.hwnd == hwnd for window in item.windows)
+
+            child = self.layout.itemAt(index)
+            if child is None:
+                continue
+
+            button = child.widget()
+            if button is not None:
+                button.item.active = item.active
+                button.update()
+
     def rebuild(self):
         while self.layout.count():
             child = self.layout.takeAt(0)

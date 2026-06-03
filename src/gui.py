@@ -11,6 +11,7 @@ from src.widgets import *
 from src.shell import *
 from src.blur import apply_acrylic
 from src.utils import theme_color_css,menu_style
+from src.win_observer import WindowEventWatcher
 import subprocess
 import win32gui
 import win32con
@@ -26,6 +27,7 @@ class MainWindow(QMainWindow):
         self.apps_bars: list[TaskbarAppsBar] = []
         self.tray_widgets: list[TrayWidget] = []
         self.tray_items: list[TrayItem] = []
+        self.apps_refresh_pending = False
         self.config_reload_requested.connect(self.reload_from_disk)
 
         self.setup_window()
@@ -33,7 +35,11 @@ class MainWindow(QMainWindow):
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.refresh_apps)
-        self.timer.start(1500)
+        self.timer.start(5000)
+
+        self.window_events = WindowEventWatcher(self)
+        self.window_events.foregroundChanged.connect(self.refresh_active_window)
+        self.window_events.windowsChanged.connect(self.schedule_apps_refresh)
 
     def setup_window(self):
         screen_size = QGuiApplication.primaryScreen().size()
@@ -560,6 +566,8 @@ class MainWindow(QMainWindow):
         return items
     
     def refresh_apps(self):
+        self.apps_refresh_pending = False
+
         if not self.apps_bars and not self.tray_widgets:
             return
 
@@ -575,6 +583,20 @@ class MainWindow(QMainWindow):
             for tray_widget in self.tray_widgets:
                 tray_widget.set_items(self.build_tray_items())
 
+    def schedule_apps_refresh(self,delay=120):
+        if self.apps_refresh_pending:
+            return
+
+        self.apps_refresh_pending = True
+        QTimer.singleShot(delay,self.refresh_apps)
+
+    def refresh_active_window(self,hwnd: int | None = None):
+        if hwnd is None:
+            hwnd = win32gui.GetForegroundWindow()
+
+        for apps_bar in self.apps_bars:
+            apps_bar.set_active_window(hwnd)
+
     def on_item_clicked(self,item: TaskbarItem,button: object):
         if button == "pin":
             self.toggle_pinned_app(item)
@@ -589,6 +611,7 @@ class MainWindow(QMainWindow):
         if count == 0:
             if item.launch_path:
                 launch_windows_app(item.launch_path)
+                self.schedule_apps_refresh()
         elif count == 1:
             hwnd = item.windows[0].hwnd
             self.activate_window(hwnd)
@@ -599,6 +622,8 @@ class MainWindow(QMainWindow):
         try:
             win32gui.ShowWindow(hwnd,win32con.SW_RESTORE)
             win32gui.SetForegroundWindow(hwnd)
+            self.refresh_active_window(hwnd)
+            self.schedule_apps_refresh(250)
         except Exception as e:
             print("couldn't activate window:",e)
 
