@@ -276,8 +276,17 @@ class TaskbarButton(QAbstractButton):
         if not self.item.running:
             return
 
-        indicator_h = 2
+        reference_button_width = 48
+
+        def scale_width(value: int) -> int:
+            return max(1,round(rect.width()*value/reference_button_width))
+
+        def scale_offset(value: int) -> int:
+            return round(rect.width()*value/reference_button_width)
+
+        indicator_h = max(1,round(rect.height()*2/30))
         indicator_y = rect.height()-indicator_h
+        center_x = rect.width()//2
 
         color = theme_color(self.config.theme.accent)
         darker_color = "#"+"".join(
@@ -289,16 +298,22 @@ class TaskbarButton(QAbstractButton):
 
         if window_count <= 1:
             if self.hovered:
-                painter.fillRect(rect.width()//2-22,indicator_y,44,indicator_h,color)
+                indicator_w = scale_width(44)
+                painter.fillRect(center_x+scale_offset(-22),indicator_y,indicator_w,indicator_h,color)
             else:
-                painter.fillRect(rect.width()//2-18,indicator_y,36,indicator_h,color)
+                indicator_w = scale_width(36)
+                painter.fillRect(center_x+scale_offset(-18),indicator_y,indicator_w,indicator_h,color)
         else:
             if self.hovered:
-                painter.fillRect(rect.width()//2-25,indicator_y,40,indicator_h,color)
-                painter.fillRect(rect.width()//2+16,indicator_y,6,indicator_h,darker_color)
+                main_w = scale_width(40)
+                secondary_w = scale_width(6)
+                painter.fillRect(center_x+scale_offset(-25),indicator_y,main_w,indicator_h,color)
+                painter.fillRect(center_x+scale_offset(16),indicator_y,secondary_w,indicator_h,darker_color)
             else:
-                painter.fillRect(rect.width()//2-19,indicator_y,25,indicator_h,color)
-                painter.fillRect(rect.width()//2+7,indicator_y,12,indicator_h,darker_color)
+                main_w = scale_width(25)
+                secondary_w = scale_width(12)
+                painter.fillRect(center_x+scale_offset(-19),indicator_y,main_w,indicator_h,color)
+                painter.fillRect(center_x+scale_offset(7),indicator_y,secondary_w,indicator_h,darker_color)
 
 class ShowDesktopButton(QAbstractButton):
     def __init__(self,config: Config,parent=None):
