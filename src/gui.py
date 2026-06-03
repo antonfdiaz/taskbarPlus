@@ -64,8 +64,8 @@ class MainWindow(QMainWindow):
         self.menu.addSeparator()
         self.skins_menu = self.create_skins_menu()
         self.menu.addMenu(self.skins_menu)
-        self.menu.addAction("Refresh",self.rebuild_ui).setIcon(QIcon("assets/refresh.png").pixmap(16,16))
-        self.menu.addAction("Exit",self.close).setIcon(QIcon("assets/close.png").pixmap(16,16))
+        self.menu.addAction("Refresh",self.rebuild_ui).setIcon(QIcon(self.config.resolve_asset("assets/refresh.png")).pixmap(16,16))
+        self.menu.addAction("Exit",self.close).setIcon(QIcon(self.config.resolve_asset("assets/close.png")).pixmap(16,16))
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(lambda pos: self.menu.exec(self.mapToGlobal(pos)))
 
@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
         skins_menu = QMenu("Skins",self)
         skins_menu.setStyleSheet(menu_style(self.config))
         skins_menu.setToolTipsVisible(True)
-        skins_menu.setIcon(QIcon("assets/skin.png").pixmap(16,16))
+        skins_menu.setIcon(QIcon(self.config.resolve_asset("assets/skin.png")).pixmap(16,16))
 
         skins_dir = self.config.config_dir/"skins"
         if not skins_dir.exists():
@@ -135,7 +135,9 @@ class MainWindow(QMainWindow):
 
         texture_rule = ""
         if self.config.theme.taskbar_texture:
-            texture_path = self.config.theme.taskbar_texture.replace("\\","/")
+            texture_path = self.config.resolve_asset(self.config.theme.taskbar_texture)
+            if texture_path:
+                texture_path = texture_path.replace("\\","/")
             if self.config.theme.taskbar_texture_mode == "stretch":
                 texture_rule = f'border-image: url("{texture_path}") 0 0 0 0 stretch stretch;'
             elif self.config.theme.taskbar_texture_mode == "tile":
@@ -207,14 +209,14 @@ class MainWindow(QMainWindow):
 
         for section in sections:
             if section == "start":
-                widget = self.create_button("start","Start",self.config.theme.start_icon,self.on_start_clicked)
+                widget = self.create_button("start","Start",self.config.resolve_asset(self.config.theme.start_icon),self.on_start_clicked)
             elif section == "search":
                 if self.config.behavior.search.mode == "box":
                     widget = SearchBox(self.config)
                 elif self.config.behavior.search.mode == "icon":
-                    widget = self.create_button("search","Search",self.config.theme.search_icon,self.on_search_clicked)
+                    widget = self.create_button("search","Search",self.config.resolve_asset(self.config.theme.search_icon),self.on_search_clicked)
             elif section == "task_view":
-                widget = self.create_button("task_view","Task View",self.config.theme.task_view_icon,self.on_task_view_clicked)
+                widget = self.create_button("task_view","Task View",self.config.resolve_asset(self.config.theme.task_view_icon),self.on_task_view_clicked)
             elif section == "apps":
                 widget = TaskbarAppsBar(apps_items,self.config)
                 widget.itemClicked.connect(self.on_item_clicked)
@@ -638,7 +640,7 @@ class MainWindow(QMainWindow):
             )
 
         new_win_action = menu.addAction("Open new window")
-        new_win_action.setIcon(QIcon("assets/add.png").pixmap(15,15))
+        new_win_action.setIcon(QIcon(self.config.resolve_asset("assets/add.png")).pixmap(15,15))
         new_win_action.triggered.connect(
             lambda checked=False,path=item.launch_path: launch_windows_app(path) if path else None
         )

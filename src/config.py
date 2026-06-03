@@ -93,15 +93,19 @@ class SkinMetadata:
 class Config:
     def __init__(self,config_dir="config"):
         self.config_dir = Path(config_dir)
+        self.root_dir = Path(__file__).resolve().parent.parent
+        self.base_assets_dir = self.root_dir/"assets"
+        self.skins_dir = self.config_dir/"skins"
+        self.user_dir = self.config_dir/"user"
 
         #load user config
-        with open(self.config_dir/"user"/"settings.json","r",encoding="utf-8") as f:
+        with open(self.user_dir/"settings.json","r",encoding="utf-8") as f:
             settings_data = json.load(f)
 
-        with open(self.config_dir/"user"/"apps.json","r",encoding="utf-8") as f:
+        with open(self.user_dir/"apps.json","r",encoding="utf-8") as f:
             apps_data = json.load(f)
 
-        with open(self.config_dir/"user"/"behavior.json","r",encoding="utf-8") as f:
+        with open(self.user_dir/"behavior.json","r",encoding="utf-8") as f:
             behavior_data = json.load(f)
 
         self.settings = SettingsConfig(**settings_data)
@@ -112,41 +116,45 @@ class Config:
         )
 
         #load skin config + metadata
-        with open(self.config_dir/"skins"/self.settings.skin/"metadata.json","r",encoding="utf-8") as f:
+        with open(self.skins_dir/self.settings.skin/"metadata.json","r",encoding="utf-8") as f:
             skin_md_data = json.load(f)
 
-        with open(self.config_dir/"skins"/self.settings.skin/"layout.json","r",encoding="utf-8") as f:
+        with open(self.skins_dir/self.settings.skin/"layout.json","r",encoding="utf-8") as f:
             layout_data = json.load(f)
 
-        with open(self.config_dir/"skins"/self.settings.skin/"theme.json","r",encoding="utf-8") as f:
+        with open(self.skins_dir/self.settings.skin/"theme.json","r",encoding="utf-8") as f:
             theme_data = json.load(f)
 
         self.skin_metadata = SkinMetadata(**skin_md_data)
         self.layout = LayoutConfig(**layout_data)
         self.theme = ThemeConfig(**theme_data)
 
+        #get active skin
+        self.active_skin_id = self.settings.skin
+        self.active_skin_dir = self.skins_dir/self.settings.skin
+
     def save_theme(self):
-        with open(self.config_dir/"skins"/self.settings.skin/"theme.json","w",encoding="utf-8") as f:
+        with open(self.skins_dir/self.settings.skin/"theme.json","w",encoding="utf-8") as f:
             json.dump(asdict(self.theme),f,indent=4)
             f.write("\n")
 
     def save_layout(self):
-        with open(self.config_dir/"skins"/self.settings.skin/"layout.json","w",encoding="utf-8") as f:
+        with open(self.skins_dir/self.settings.skin/"layout.json","w",encoding="utf-8") as f:
             json.dump(asdict(self.layout),f,indent=4)
             f.write("\n")
 
     def save_apps(self):
-        with open(self.config_dir/"user"/"apps.json","w",encoding="utf-8") as f:
+        with open(self.user_dir/"apps.json","w",encoding="utf-8") as f:
             json.dump(asdict(self.apps),f,indent=4)
             f.write("\n")
 
     def save_behavior(self):
-        with open(self.config_dir/"user"/"behavior.json","w",encoding="utf-8") as f:
+        with open(self.user_dir/"behavior.json","w",encoding="utf-8") as f:
             json.dump(asdict(self.behavior),f,indent=4)
             f.write("\n")
     
     def save_settings(self):
-        with open(self.config_dir/"user"/"settings.json","w",encoding="utf-8") as f:
+        with open(self.user_dir/"settings.json","w",encoding="utf-8") as f:
             json.dump(asdict(self.settings),f,indent=4)
             f.write("\n")
 
@@ -167,3 +175,27 @@ class Config:
             self.save_apps()
             self.save_behavior()
             self.save_settings()
+
+    def resolve_asset(self,relative_path: str | None) -> str | None:
+        if not relative_path:
+            return None
+
+        rel = Path(relative_path)
+
+        skin_candidate = self.active_skin_dir/rel
+        if skin_candidate.exists():
+            print(f"using skin asset: {relative_path}")
+            return str(skin_candidate)
+
+        base_candidate = self.base_assets_dir/rel.name
+        if base_candidate.exists():
+            print(f"using base asset: {relative_path}")
+            return str(base_candidate)
+
+        print(f"asset not found: {relative_path}")
+        return str(skin_candidate)
+    
+    def resolve_skin_asset(self,filename: str | None) -> str | None:
+        if not filename:
+            return None
+        return self.resolve_asset(f"assets/{filename}")

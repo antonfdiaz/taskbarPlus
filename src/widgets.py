@@ -168,10 +168,10 @@ class TaskbarButton(QAbstractButton):
                 action.triggered.connect(lambda checked=False,hwnd=window.hwnd: self.itemAction.emit(self.item,hwnd))
             menu.addSeparator()
         new_win_action = menu.addAction("Open new window")
-        new_win_action.setIcon(QIcon("assets/add.png").pixmap(15,15))
+        new_win_action.setIcon(QIcon(self.config.resolve_asset("assets/add.png")).pixmap(15,15))
         new_win_action.triggered.connect(lambda: launch_windows_app(self.item.launch_path) if self.item.launch_path else None)
         pin_action = menu.addAction("Unpin from taskbar" if self.item.pinned else "Pin to taskbar")
-        pin_action.setIcon(QIcon("assets/pin.png") if not self.item.pinned else QIcon("assets/unpin.png"))
+        pin_action.setIcon(QIcon(self.config.resolve_asset("assets/pin.png")) if not self.item.pinned else QIcon(self.config.resolve_asset("assets/unpin.png")))
         pin_action.triggered.connect(lambda: self.itemAction.emit(self.item,"pin"))
         menu.exec(self.mapToGlobal(pos))
 
@@ -508,7 +508,11 @@ class SearchBox(QLineEdit):
             self.config.theme.search_box_height
         )
         self.setClearButtonEnabled(self.config.behavior.search.box_clear_button)
-        self.addAction(QIcon(self.config.theme.search_icon).pixmap(self.config.theme.search_icon_size,self.config.theme.search_icon_size),QLineEdit.LeadingPosition)
+        search_icon_path = self.config.resolve_asset(self.config.theme.search_icon)
+        self.addAction(QIcon(search_icon_path).pixmap(
+            self.config.theme.search_icon_size,
+            self.config.theme.search_icon_size
+        ),QLineEdit.LeadingPosition)
         self.setStyleSheet(f"""
             background-color: {self.config.theme.search_box_background};
             color: {self.config.theme.search_box_foreground};
