@@ -143,20 +143,30 @@ class MainWindow(QMainWindow):
             }}
         """)
 
-        layout = QHBoxLayout()
+        layout = QGridLayout()
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(0)
         central_widget.setLayout(layout)
 
-        sections = [*self.config.layout.left,*self.config.layout.right]
+        sections = [*self.config.layout.left,*self.config.layout.center,*self.config.layout.right]
         apps_items = self.build_taskbar_items() if "apps" in sections else []
 
         left_container = self.build_section(self.config.layout.left,apps_items)
+        center_container = self.build_section(self.config.layout.center,apps_items)
         right_container = self.build_section(self.config.layout.right,apps_items)
 
-        layout.addWidget(left_container)
-        layout.addStretch()
-        layout.addWidget(right_container)
+        edge_container = QWidget()
+        edge_layout = QHBoxLayout()
+        edge_layout.setContentsMargins(0,0,0,0)
+        edge_layout.setSpacing(0)
+        edge_container.setLayout(edge_layout)
+
+        edge_layout.addWidget(left_container)
+        edge_layout.addStretch()
+        edge_layout.addWidget(right_container)
+
+        layout.addWidget(edge_container,0,0)
+        layout.addWidget(center_container,0,0,alignment=Qt.AlignCenter)
 
     def reload_from_disk(self):
         if QApplication.activePopupWidget() is not None:

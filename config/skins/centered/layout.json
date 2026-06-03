@@ -1,0 +1,5 @@
+{
+    "left": [],
+    "center": ["start","search","task_view","apps"],
+    "right": ["tray","clock","show_desktop"]
+}
