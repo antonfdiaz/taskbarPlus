@@ -59,6 +59,12 @@ class MainWindow(QMainWindow):
                 print("couldn't apply acrylic blur:",e)
 
         self.menu = QMenu(self)
+        self.rebuild_context_menu()
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(lambda pos: self.menu.exec(self.mapToGlobal(pos)))
+
+    def rebuild_context_menu(self):
+        self.menu.clear()
         self.menu.setStyleSheet(menu_style(self.config))
         self.menu.addAction("Task Manager",lambda: launch_windows_app("taskmgr.exe"))
         self.menu.addSeparator()
@@ -66,8 +72,6 @@ class MainWindow(QMainWindow):
         self.menu.addMenu(self.skins_menu)
         self.menu.addAction("Refresh",self.rebuild_ui).setIcon(QIcon(self.config.resolve_asset("assets/refresh.png")).pixmap(16,16))
         self.menu.addAction("Exit",self.close).setIcon(QIcon(self.config.resolve_asset("assets/close.png")).pixmap(16,16))
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(lambda pos: self.menu.exec(self.mapToGlobal(pos)))
 
     def create_skins_menu(self) -> QMenu:
         skins_menu = QMenu("Skins",self)
@@ -127,7 +131,7 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 print("couldn't apply acrylic blur:",e)
 
-        self.menu.setStyleSheet(menu_style(self.config))
+        self.rebuild_context_menu()
 
         central_widget = QWidget()
         central_widget.setObjectName("taskbarRoot")
