@@ -1,0 +1,14 @@
+{
+    "clock": {
+        "time_format": "hh:mm:ss",
+        "date_format": "dd/MM/yyyy",
+        "show_time": true,
+        "show_date": false
+    },
+    "search": {
+        "mode": "box",
+        "engine": "windows_search",
+        "box_clear_button": false,
+        "everything_path": "C:\\Program Files\\Everything\\Everything.exe"
+    }
+}

@@ -82,8 +82,8 @@ class ClockWidget(QLabel):
         self.update_time()
 
     def update_time(self):
-        current_time = QTime.currentTime().toString(self.config.theme.clock_time_format)
-        current_date = QDate.currentDate().toString(self.config.theme.clock_date_format)
+        current_time = QTime.currentTime().toString(self.config.behavior.clock.time_format)
+        current_date = QDate.currentDate().toString(self.config.behavior.clock.date_format)
         text = ""
         if self.show_time:
             text += current_time
@@ -479,7 +479,7 @@ class SearchBox(QLineEdit):
             self.config.theme.search_box_width+self.config.theme.padding_x*2,
             self.config.theme.search_box_height
         )
-        self.setClearButtonEnabled(self.config.theme.search_box_clear_button)
+        self.setClearButtonEnabled(self.config.behavior.search.box_clear_button)
         self.addAction(QIcon(self.config.theme.search_icon).pixmap(self.config.theme.search_icon_size,self.config.theme.search_icon_size),QLineEdit.LeadingPosition)
         self.setStyleSheet(f"""
             background-color: {self.config.theme.search_box_background};
@@ -492,7 +492,7 @@ class SearchBox(QLineEdit):
 
     def focusInEvent(self,event):
         super().focusInEvent(event)
-        if self.config.theme.search_engine == "windows_search":
+        if self.config.behavior.search.engine == "windows_search":
             self.launch_search("")
 
     def focusOutEvent(self,event):
@@ -516,10 +516,10 @@ class SearchBox(QLineEdit):
         super().keyPressEvent(event)
 
     def launch_search(self,query=""):
-        if self.config.theme.search_engine == "everything":
-            thread = Thread(target=lambda: subprocess.run(f'"{self.config.theme.everything_path}" -search "{query}"',shell=True))
+        if self.config.behavior.search.engine == "everything":
+            thread = Thread(target=lambda: subprocess.run(f'"{self.config.behavior.search.everything_path}" -search "{query}"',shell=True))
             thread.start()
-        elif self.config.theme.search_engine == "windows_search":
+        elif self.config.behavior.search.engine == "windows_search":
             self.clearFocus()
             press_key(win32con.VK_LWIN)
             tap_key(ord("S"))

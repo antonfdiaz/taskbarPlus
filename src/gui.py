@@ -123,10 +123,10 @@ class MainWindow(QMainWindow):
         tap_key(win32con.VK_LWIN)
     
     def on_search_clicked(self):
-        if self.config.theme.search_engine == "everything":
-            thread = Thread(target=lambda: subprocess.run(f'"{self.config.theme.everything_path}"',shell=True))
+        if self.config.behavior.search.engine == "everything":
+            thread = Thread(target=lambda: subprocess.run(f'"{self.config.behavior.search.everything_path}"',shell=True))
             thread.start()
-        elif self.config.theme.search_engine == "windows_search":
+        elif self.config.behavior.search.engine == "windows_search":
             press_key(win32con.VK_LWIN)
             tap_key(ord("S"))
             release_key(win32con.VK_LWIN)
@@ -147,9 +147,9 @@ class MainWindow(QMainWindow):
             if section == "start":
                 widget = self.create_button("start","Start",self.config.theme.start_icon,self.on_start_clicked)
             elif section == "search":
-                if self.config.theme.search_mode == "box":
+                if self.config.behavior.search.mode == "box":
                     widget = SearchBox(self.config)
-                elif self.config.theme.search_mode == "icon":
+                elif self.config.behavior.search.mode == "icon":
                     widget = self.create_button("search","Search",self.config.theme.search_icon,self.on_search_clicked)
             elif section == "task_view":
                 widget = self.create_button("task_view","Task View",self.config.theme.task_view_icon,self.on_task_view_clicked)
@@ -165,7 +165,7 @@ class MainWindow(QMainWindow):
                 widget.itemRightClicked.connect(self.on_tray_item_right_clicked)
                 self.tray_widgets.append(widget)
             elif section == "clock":
-                widget = ClockWidget(self.config,show_date=self.config.theme.clock_date_visible,show_time=self.config.theme.clock_time_visible)
+                widget = ClockWidget(self.config,show_date=self.config.behavior.clock.show_date,show_time=self.config.behavior.clock.show_time)
             elif section == "show_desktop":
                 widget = ShowDesktopButton(self.config)
             else:

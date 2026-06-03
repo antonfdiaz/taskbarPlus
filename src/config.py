@@ -1,5 +1,5 @@
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict,dataclass,field
 from pathlib import Path
 
 @dataclass
@@ -29,10 +29,6 @@ class ThemeConfig:
     padding_y: int
     gap: int
     tray_gap: int
-    clock_time_format: str
-    clock_date_format: str
-    clock_time_visible: bool
-    clock_date_visible: bool
     start_icon_transition: dict
     start_icon: str
     start_icon_size: int
@@ -40,8 +36,6 @@ class ThemeConfig:
     start_button_height: int
     start_button_hover: str
     start_button_active: str
-    search_mode: str
-    search_engine: str
     search_icon: str
     search_icon_size: int
     search_button_width: int
@@ -50,8 +44,6 @@ class ThemeConfig:
     search_box_height: int
     search_box_background: str
     search_box_foreground: str
-    search_box_clear_button: bool
-    everything_path: str
     task_view_icon: str
     task_view_icon_size: int
     task_view_button_width: int
@@ -67,6 +59,26 @@ class ThemeConfig:
 class AppsConfig:
     pinned: list
 
+#behavior config
+@dataclass
+class ClockBehaviorConfig:
+    time_format: str = "hh:mm:ss"
+    date_format: str = "dd/MM/yyyy"
+    show_time: bool = True
+    show_date: bool = False
+
+@dataclass
+class SearchBehaviorConfig:
+    mode: str = "box"
+    engine: str = "windows_search"
+    box_clear_button: bool = False
+    everything_path: str = r"C:\Program Files\Everything\Everything.exe"
+
+@dataclass
+class BehaviorConfig:
+    clock: ClockBehaviorConfig = field(default_factory=ClockBehaviorConfig)
+    search: SearchBehaviorConfig = field(default_factory=SearchBehaviorConfig)
+
 class Config:
     def __init__(self,config_dir="config"):
         self.config_dir = Path(config_dir)
@@ -80,9 +92,16 @@ class Config:
         with open(self.config_dir/"apps.json","r",encoding="utf-8") as f:
             apps_data = json.load(f)
 
+        with open(self.config_dir / "behavior.json", "r", encoding="utf-8") as f:
+            behavior_data = json.load(f)
+
         self.layout = LayoutConfig(**layout_data)
         self.theme = ThemeConfig(**theme_data)
         self.apps = AppsConfig(**apps_data)
+        self.behavior = BehaviorConfig(
+            clock=ClockBehaviorConfig(**behavior_data.get("clock", {})),
+            search=SearchBehaviorConfig(**behavior_data.get("search", {})),
+        )
 
     def save_theme(self):
         with open(self.config_dir/"theme.json","w",encoding="utf-8") as f:
@@ -99,6 +118,11 @@ class Config:
             json.dump(asdict(self.apps),f,indent=4)
             f.write("\n")
 
+    def save_behavior(self):
+        with open(self.config_dir/"behavior.json","w",encoding="utf-8") as f:
+            json.dump(asdict(self.behavior),f,indent=4)
+            f.write("\n")
+
     def save(self, section: str | None = None):
         if section == "theme":
             self.save_theme()
@@ -106,7 +130,10 @@ class Config:
             self.save_layout()
         elif section == "apps":
             self.save_apps()
+        elif section == "behavior":
+            self.save_behavior()
         else:
             self.save_theme()
             self.save_layout()
             self.save_apps()
+            self.save_behavior()
