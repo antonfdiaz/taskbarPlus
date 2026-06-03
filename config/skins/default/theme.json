@@ -7,7 +7,7 @@
     "background": "#00000000",
     "foreground": "#ffffff",
     "hover": "#55555555",
-    "active": "#44444444",
+    "active": "#66666666",
     "accent": "#4cc2ff",
     "icon_size": 16,
     "icon_opacity": 1.0,
