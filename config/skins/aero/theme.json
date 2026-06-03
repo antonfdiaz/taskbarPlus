@@ -42,8 +42,8 @@
     "task_view_button_height": 40,
     "show_desktop_width": 5,
     "show_desktop_border_color": "#cccccc",
-    "menu_background": "#202020",
-    "menu_foreground": "#ffffff",
-    "menu_hover": "#55555555",
-    "menu_separator_color": "#404040"
+    "menu_background": "#ffffff",
+    "menu_foreground": "#000000",
+    "menu_hover": "#dddddd",
+    "menu_separator_color": "#cccccc"
 }
