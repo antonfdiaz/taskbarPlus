@@ -24,17 +24,7 @@ class MainWindow(QMainWindow):
     def __init__(self,config: Config):
         super().__init__()
         self.config: Config = config
-        try:
-            self.l18n = L18n(f"i18n/{self.config.settings.language}.json")
-        except Exception as e:
-            print("couldn't load language file, falling back to default:",e)
-            msgbox = QMessageBox(self)
-            msgbox.setIcon(QMessageBox.Warning)
-            msgbox.setWindowTitle("taskbarPlus")
-            msgbox.setText("Couldn't load language file, falling back to default.")
-            msgbox.setInformativeText(f"Error details:\n{e}")
-            msgbox.exec()
-            self.l18n = L18n("i18n/en-US.json")
+        self.load_l18n()
         self.dynamic_app_order: list[str] = []
         self.apps_bars: list[TaskbarAppsBar] = []
         self.tray_widgets: list[TrayWidget] = []
@@ -55,6 +45,19 @@ class MainWindow(QMainWindow):
 
     def tr(self,key: str) -> str:
         return self.l18n.tr(key)
+
+    def load_l18n(self):
+        try:
+            self.l18n = L18n(f"i18n/{self.config.settings.language}.json")
+        except Exception as e:
+            print("couldn't load language file, falling back to default:",e)
+            msgbox = QMessageBox(self)
+            msgbox.setIcon(QMessageBox.Warning)
+            msgbox.setWindowTitle("taskbarPlus")
+            msgbox.setText("Couldn't load language file, falling back to default.")
+            msgbox.setInformativeText(f"Error details:\n{e}")
+            msgbox.exec()
+            self.l18n = L18n("i18n/en-US.json")
 
     def setup_window(self):
         screen_size = QGuiApplication.primaryScreen().size()
@@ -85,8 +88,43 @@ class MainWindow(QMainWindow):
         self.menu.addSeparator()
         self.skins_menu = self.create_skins_menu()
         self.menu.addMenu(self.skins_menu)
+        self.lang_menu = self.create_lang_menu()
+        self.menu.addMenu(self.lang_menu)
         self.menu.addAction(self.tr("taskbar.menu.refresh"),self.rebuild_ui).setIcon(QIcon(self.config.resolve_asset("assets/refresh.png")).pixmap(16,16))
         self.menu.addAction(self.tr("taskbar.menu.exit"),self.close).setIcon(QIcon(self.config.resolve_asset("assets/close.png")).pixmap(16,16))
+
+    def create_lang_menu(self) -> QMenu:
+        lang_menu = QMenu(self.tr("taskbar.menu.language"),self)
+        lang_menu.setStyleSheet(menu_style(self.config))
+        lang_menu.setToolTipsVisible(True)
+        lang_menu.setIcon(QIcon(self.config.resolve_asset("assets/language.png")).pixmap(16,16))
+
+        languages_dir = Path("i18n")
+        if not languages_dir.exists():
+            return lang_menu
+
+        for lang_file in languages_dir.iterdir():
+            if not lang_file.is_file() or lang_file.suffix.lower() != ".json":
+                continue
+
+            lang_code = lang_file.stem
+            action = lang_menu.addAction(lang_code)
+            action.setCheckable(True)
+            action.setChecked(lang_code == self.config.settings.language)
+            action.triggered.connect(lambda checked=False,code=lang_code: self.change_lang(code))
+
+        return lang_menu
+    
+    def change_lang(self,lang_code: str):
+        if lang_code == self.config.settings.language:
+            return
+
+        for action in self.lang_menu.actions():
+            action.setChecked(action.text() == lang_code)
+
+        self.config.settings.language = lang_code
+        self.config.save_settings()
+        self.reload_from_disk()
 
     def create_skins_menu(self) -> QMenu:
         skins_menu = QMenu(self.tr("taskbar.menu.skins"),self)
@@ -132,6 +170,7 @@ class MainWindow(QMainWindow):
         self.reload_from_disk()
 
     def rebuild_ui(self):
+        self.load_l18n()
         self.apps_bars = []
         self.tray_widgets = []
         self.tray_items = []
@@ -659,7 +698,7 @@ class MainWindow(QMainWindow):
                 lambda checked=False,hwnd=window.hwnd: self.activate_window(hwnd)
             )
 
-        new_win_action = menu.addAction("Open new window")
+        new_win_action = menu.addAction(self.tr("taskbar.menu.new_win"))
         new_win_action.setIcon(QIcon(self.config.resolve_asset("assets/add.png")).pixmap(15,15))
         new_win_action.triggered.connect(
             lambda checked=False,path=item.launch_path: launch_windows_app(path) if path else None

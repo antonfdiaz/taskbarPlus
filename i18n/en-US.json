@@ -1,6 +1,7 @@
 {
 	"taskbar.menu.task_manager": "Task Manager",
 	"taskbar.menu.skins": "Skins",
+    "taskbar.menu.language": "Language",
 	"taskbar.menu.refresh": "Refresh",
 	"taskbar.menu.exit": "Exit",
 	"taskbar.menu.new_win": "Open new window",
