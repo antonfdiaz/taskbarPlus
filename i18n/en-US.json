@@ -1,0 +1,15 @@
+{
+	"taskbar.menu.task_manager": "Task Manager",
+	"taskbar.menu.skins": "Skins",
+	"taskbar.menu.refresh": "Refresh",
+	"taskbar.menu.exit": "Exit",
+	"taskbar.menu.new_win": "Open new window",
+	"taskbar.menu.pin": "Pin to taskbar",
+	"taskbar.menu.unpin": "Unpin from taskbar",
+	"taskbar.button.start": "Start",
+	"taskbar.button.search": "Search",
+	"taskbar.button.task_view": "Task View",
+	"taskbar.search.placeholder": "Type here to search",
+    "taskbar.search.placeholder_short": "Search",
+	"taskbar.skin.tooltip": "Author: {metadata.author}\nVersion: {metadata.version}"
+}

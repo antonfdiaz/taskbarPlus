@@ -4,6 +4,7 @@ from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 import win32con
+from src.l18n import L18n
 from src.shell import *
 from src.config import Config
 from src.models import *
@@ -14,9 +15,10 @@ class TaskbarAppsBar(QWidget):
     itemClicked = Signal(object,object)
     appDropped = Signal(str)
 
-    def __init__(self,items: list[TaskbarItem],config: Config):
+    def __init__(self,items: list[TaskbarItem],config: Config,l18n: L18n):
         super().__init__()
         self.config = config
+        self.l18n = l18n
         self.items = items
         self.setAcceptDrops(True)
         self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
@@ -53,7 +55,7 @@ class TaskbarAppsBar(QWidget):
                 widget.deleteLater()
 
         for item in self.items:
-            btn = TaskbarButton(item,self.config)
+            btn = TaskbarButton(item,self.config,self.l18n)
             tooltip = item.title
             if len(item.windows) > 1:
                 tooltip = f"{item.title} ({len(item.windows)})"
@@ -110,9 +112,10 @@ class ClockWidget(QLabel):
 class TaskbarButton(QAbstractButton):
     itemAction = Signal(object,object)
 
-    def __init__(self,item: TaskbarItem,config: Config,parent=None):
+    def __init__(self,item: TaskbarItem,config: Config,l18n: L18n,parent=None):
         super().__init__(parent)
         self.config = config
+        self.l18n = l18n
         self.item = item
         self.icon = item.icon
         self.hover_icon = item.hover_icon
@@ -159,6 +162,9 @@ class TaskbarButton(QAbstractButton):
                 self.config.theme.button_height
             )
 
+    def tr(self,key):
+        return self.l18n.tr(key)
+
     def show_context_menu(self,pos):
         menu = QMenu(self)
         menu.setStyleSheet(menu_style(self.config))
@@ -167,10 +173,10 @@ class TaskbarButton(QAbstractButton):
                 action = menu.addAction(window.title)
                 action.triggered.connect(lambda checked=False,hwnd=window.hwnd: self.itemAction.emit(self.item,hwnd))
             menu.addSeparator()
-        new_win_action = menu.addAction("Open new window")
+        new_win_action = menu.addAction(self.tr("taskbar.menu.new_win"))
         new_win_action.setIcon(QIcon(self.config.resolve_asset("assets/add.png")).pixmap(15,15))
         new_win_action.triggered.connect(lambda: launch_windows_app(self.item.launch_path) if self.item.launch_path else None)
-        pin_action = menu.addAction("Unpin from taskbar" if self.item.pinned else "Pin to taskbar")
+        pin_action = menu.addAction(self.tr("taskbar.menu.unpin" if self.item.pinned else "taskbar.menu.pin"))
         pin_action.setIcon(QIcon(self.config.resolve_asset("assets/pin.png")) if not self.item.pinned else QIcon(self.config.resolve_asset("assets/unpin.png")))
         pin_action.triggered.connect(lambda: self.itemAction.emit(self.item,"pin"))
         menu.exec(self.mapToGlobal(pos))
@@ -499,9 +505,10 @@ class TrayIcon(QAbstractButton):
         painter.drawPixmap(x,y,pix)
 
 class SearchBox(QLineEdit):
-    def __init__(self,config: Config):
+    def __init__(self,config: Config,l18n: L18n):
         super().__init__()
         self.config = config
+        self.l18n = l18n
         self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         self.setFixedSize(
             self.config.theme.search_box_width+self.config.theme.padding_x*2,
@@ -520,7 +527,13 @@ class SearchBox(QLineEdit):
             font-size: 16px;
             padding: {self.config.theme.padding_y}px {self.config.theme.padding_x}px;
         """)
-        self.setPlaceholderText("Type here to search")
+        if self.config.theme.search_box_height >= 35:
+            self.setPlaceholderText(self.tr("taskbar.search.placeholder"))
+        else:
+            self.setPlaceholderText(self.tr("taskbar.search.placeholder_short"))
+
+    def tr(self,key):
+        return self.l18n.tr(key)
 
     def focusInEvent(self,event):
         super().focusInEvent(event)

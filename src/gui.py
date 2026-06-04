@@ -5,6 +5,7 @@ from pathlib import Path
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import QTimer,Qt,Signal
+from src.l18n import L18n
 from src.config import Config, SkinMetadata
 from src.models import *
 from src.widgets import *
@@ -22,6 +23,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self,config: Config):
         super().__init__()
+        self.l18n = L18n("i18n/es-ES.json")
         self.config: Config = config
         self.dynamic_app_order: list[str] = []
         self.apps_bars: list[TaskbarAppsBar] = []
@@ -40,6 +42,9 @@ class MainWindow(QMainWindow):
         self.window_events = WindowEventWatcher(self)
         self.window_events.foregroundChanged.connect(self.refresh_active_window)
         self.window_events.windowsChanged.connect(self.schedule_apps_refresh)
+
+    def tr(self,key: str) -> str:
+        return self.l18n.tr(key)
 
     def setup_window(self):
         screen_size = QGuiApplication.primaryScreen().size()
@@ -66,15 +71,15 @@ class MainWindow(QMainWindow):
     def rebuild_context_menu(self):
         self.menu.clear()
         self.menu.setStyleSheet(menu_style(self.config))
-        self.menu.addAction("Task Manager",lambda: launch_windows_app("taskmgr.exe"))
+        self.menu.addAction(self.tr("taskbar.menu.task_manager"),lambda: launch_windows_app("taskmgr.exe"))
         self.menu.addSeparator()
         self.skins_menu = self.create_skins_menu()
         self.menu.addMenu(self.skins_menu)
-        self.menu.addAction("Refresh",self.rebuild_ui).setIcon(QIcon(self.config.resolve_asset("assets/refresh.png")).pixmap(16,16))
-        self.menu.addAction("Exit",self.close).setIcon(QIcon(self.config.resolve_asset("assets/close.png")).pixmap(16,16))
+        self.menu.addAction(self.tr("taskbar.menu.refresh"),self.rebuild_ui).setIcon(QIcon(self.config.resolve_asset("assets/refresh.png")).pixmap(16,16))
+        self.menu.addAction(self.tr("taskbar.menu.exit"),self.close).setIcon(QIcon(self.config.resolve_asset("assets/close.png")).pixmap(16,16))
 
     def create_skins_menu(self) -> QMenu:
-        skins_menu = QMenu("Skins",self)
+        skins_menu = QMenu(self.tr("taskbar.menu.skins"),self)
         skins_menu.setStyleSheet(menu_style(self.config))
         skins_menu.setToolTipsVisible(True)
         skins_menu.setIcon(QIcon(self.config.resolve_asset("assets/skin.png")).pixmap(16,16))
@@ -98,7 +103,7 @@ class MainWindow(QMainWindow):
                     continue
 
             action = skins_menu.addAction(metadata.name)
-            action.setToolTip(f"Author: {metadata.author}\nVersion: {metadata.version}")
+            action.setToolTip(self.tr("taskbar.skin.tooltip").format(metadata=metadata))
             action.setCheckable(True)
             action.setChecked(skin_dir.name == self.config.settings.skin)
             action.triggered.connect(lambda checked=False,skin=skin_dir.name: self.change_skin(skin))
@@ -213,16 +218,16 @@ class MainWindow(QMainWindow):
 
         for section in sections:
             if section == "start":
-                widget = self.create_button("start","Start",self.config.resolve_asset(self.config.theme.start_icon),self.on_start_clicked)
+                widget = self.create_button("start",self.tr("taskbar.button.start"),self.config.resolve_asset(self.config.theme.start_icon),self.on_start_clicked)
             elif section == "search":
                 if self.config.behavior.search.mode == "box":
-                    widget = SearchBox(self.config)
+                    widget = SearchBox(self.config,self.l18n)
                 elif self.config.behavior.search.mode == "icon":
-                    widget = self.create_button("search","Search",self.config.resolve_asset(self.config.theme.search_icon),self.on_search_clicked)
+                    widget = self.create_button("search",self.tr("taskbar.button.search"),self.config.resolve_asset(self.config.theme.search_icon),self.on_search_clicked)
             elif section == "task_view":
-                widget = self.create_button("task_view","Task View",self.config.resolve_asset(self.config.theme.task_view_icon),self.on_task_view_clicked)
+                widget = self.create_button("task_view",self.tr("taskbar.button.task_view"),self.config.resolve_asset(self.config.theme.task_view_icon),self.on_task_view_clicked)
             elif section == "apps":
-                widget = TaskbarAppsBar(apps_items,self.config)
+                widget = TaskbarAppsBar(apps_items,self.config,self.l18n)
                 widget.itemClicked.connect(self.on_item_clicked)
                 widget.appDropped.connect(self.pin_app_from_path)
                 self.apps_bars.append(widget)
@@ -300,7 +305,8 @@ class MainWindow(QMainWindow):
                 hover_icon_pixmap=pixmaps[1] if len(pixmaps) >= 2 else None,
                 active_icon_pixmap=pixmaps[2] if len(pixmaps) >= 3 else None
             ),
-            self.config
+            self.config,
+            self.l18n
         )
         button.setToolTip(title)
         button.clicked.connect(handler)
