@@ -82,6 +82,7 @@ class BehaviorConfig:
 @dataclass
 class SettingsConfig:
     skin: str = "default"
+    language: str = "en-US"
 
 @dataclass
 class SkinMetadata:

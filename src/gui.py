@@ -23,8 +23,18 @@ class MainWindow(QMainWindow):
 
     def __init__(self,config: Config):
         super().__init__()
-        self.l18n = L18n("i18n/es-ES.json")
         self.config: Config = config
+        try:
+            self.l18n = L18n(f"i18n/{self.config.settings.language}.json")
+        except Exception as e:
+            print("couldn't load language file, falling back to default:",e)
+            msgbox = QMessageBox(self)
+            msgbox.setIcon(QMessageBox.Warning)
+            msgbox.setWindowTitle("taskbarPlus")
+            msgbox.setText("Couldn't load language file, falling back to default.")
+            msgbox.setInformativeText(f"Error details:\n{e}")
+            msgbox.exec()
+            self.l18n = L18n("i18n/en-US.json")
         self.dynamic_app_order: list[str] = []
         self.apps_bars: list[TaskbarAppsBar] = []
         self.tray_widgets: list[TrayWidget] = []
