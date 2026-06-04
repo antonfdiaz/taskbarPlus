@@ -1,0 +1,16 @@
+{
+	"taskbar.menu.task_manager": "Gestione attività",
+	"taskbar.menu.skins": "Skins",
+    "taskbar.menu.language": "Lingua",
+	"taskbar.menu.refresh": "Aggiorna",
+	"taskbar.menu.exit": "Esci",
+	"taskbar.menu.new_win": "Apri nuova finestra",
+	"taskbar.menu.pin": "Aggiungi alla barra delle applicazioni",
+	"taskbar.menu.unpin": "Rimuovi dalla barra delle applicazioni",
+	"taskbar.button.start": "Start",
+	"taskbar.button.search": "Cerca",
+	"taskbar.button.task_view": "Visualizzazione attività",
+	"taskbar.search.placeholder": "Digita qui per eseguire la ricerca",
+    "taskbar.search.placeholder_short": "Cerca",
+	"taskbar.skin.tooltip": "Autore: {metadata.author}\nVersione: {metadata.version}"
+}

@@ -1,0 +1,16 @@
+{
+	"taskbar.menu.task_manager": "Gestionnaire des tâches",
+	"taskbar.menu.skins": "Skins",
+    "taskbar.menu.language": "Langue",
+	"taskbar.menu.refresh": "Actualiser",
+	"taskbar.menu.exit": "Quitter",
+	"taskbar.menu.new_win": "Ouvrir une nouvelle fenêtre",
+	"taskbar.menu.pin": "Épingler à la barre des tâches",
+	"taskbar.menu.unpin": "Détacher de la barre des tâches",
+	"taskbar.button.start": "Démarrer",
+	"taskbar.button.search": "Rechercher",
+	"taskbar.button.task_view": "Affichage des tâches",
+	"taskbar.search.placeholder": "Tapez ici pour rechercher",
+    "taskbar.search.placeholder_short": "Rechercher",
+	"taskbar.skin.tooltip": "Auteur: {metadata.author}\nVersion: {metadata.version}"
+}

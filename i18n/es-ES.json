@@ -10,7 +10,7 @@
 	"taskbar.button.start": "Inicio",
 	"taskbar.button.search": "Buscar",
 	"taskbar.button.task_view": "Vista de tareas",
-	"taskbar.search.placeholder": "Escribe aquí para buscar.",
+	"taskbar.search.placeholder": "Escribe aquí para buscar",
 	"taskbar.search.placeholder_short": "Buscar",
 	"taskbar.skin.tooltip": "Autor: {metadata.author}\nVersión: {metadata.version}"
 }

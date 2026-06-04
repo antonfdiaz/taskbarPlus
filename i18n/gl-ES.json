@@ -1,0 +1,16 @@
+{
+	"taskbar.menu.task_manager": "Administrador de tarefas",
+	"taskbar.menu.skins": "Skins",
+	"taskbar.menu.language": "Idioma",
+	"taskbar.menu.refresh": "Actualizar",
+	"taskbar.menu.exit": "Saír",
+	"taskbar.menu.new_win": "Abrir nova xanela",
+	"taskbar.menu.pin": "Anclar á barra de tarefas",
+	"taskbar.menu.unpin": "Desanclar da barra de tarefas",
+	"taskbar.button.start": "Inicio",
+	"taskbar.button.search": "Buscar",
+	"taskbar.button.task_view": "Vista de tarefas",
+	"taskbar.search.placeholder": "Escribe aquí para buscar.",
+	"taskbar.search.placeholder_short": "Buscar",
+	"taskbar.skin.tooltip": "Autor: {metadata.author}\nVersión: {metadata.version}"
+}

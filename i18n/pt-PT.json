@@ -1,0 +1,16 @@
+{
+	"taskbar.menu.task_manager": "Gestor de Tarefas",
+	"taskbar.menu.skins": "Skins",
+	"taskbar.menu.language": "Idioma",
+	"taskbar.menu.refresh": "Atualizar",
+	"taskbar.menu.exit": "Sair",
+	"taskbar.menu.new_win": "Abrir nova janela",
+	"taskbar.menu.pin": "Afixar na barra de tarefas",
+	"taskbar.menu.unpin": "Remover da barra de tarefas",
+	"taskbar.button.start": "Início",
+	"taskbar.button.search": "Pesquisar",
+	"taskbar.button.task_view": "Vista de Tarefas",
+	"taskbar.search.placeholder": "Escreva aqui para pesquisar",
+	"taskbar.search.placeholder_short": "Pesquisar",
+	"taskbar.skin.tooltip": "Autor: {metadata.author}\nVersão: {metadata.version}"
+}
