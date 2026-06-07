@@ -6,7 +6,7 @@ from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import QTimer,Qt,Signal
 from src.l18n import L18n
-from src.config import Config, SkinMetadata
+from src.config import Config,SkinMetadata
 from src.models import *
 from src.widgets import *
 from src.shell import *
@@ -94,6 +94,35 @@ class MainWindow(QMainWindow):
         self.menu.addAction(self.tr("taskbar.menu.exit"),self.close).setIcon(QIcon(self.config.resolve_asset("assets/close.png")).pixmap(16,16))
 
     def create_lang_menu(self) -> QMenu:
+        self.locale_lang = {
+            "en-US": "English",
+            "en-GB": "English (UK)",
+            "es-ES": "Spanish",
+            "es-MX": "Spanish (Mexico)",
+            "es-419": "Spanish (Latin America)",
+            "gl-ES": "Galician",
+            "ca-ES": "Catalan",
+            "eu-ES": "Basque",
+            "fr-FR": "French",
+            "de-DE": "German",
+            "it-IT": "Italian",
+            "pt-PT": "Portuguese",
+            "pt-BR": "Portuguese (Brazil)",
+            "nl-NL": "Dutch",
+            "pl-PL": "Polish",
+            "ru-RU": "Russian",
+            "uk-UA": "Ukrainian",
+            "zh-CN": "Chinese (Simplified)",
+            "zh-TW": "Chinese (Traditional)",
+            "ja-JP": "Japanese",
+            "ko-KR": "Korean",
+            "ar-SA": "Arabic",
+            "tr-TR": "Turkish",
+            "hi-IN": "Hindi",
+            "id-ID": "Indonesian",
+            "vi-VN": "Vietnamese",
+        }
+
         lang_menu = QMenu(self.tr("taskbar.menu.language"),self)
         lang_menu.setStyleSheet(menu_style(self.config))
         lang_menu.setToolTipsVisible(True)
@@ -108,7 +137,8 @@ class MainWindow(QMainWindow):
                 continue
 
             lang_code = lang_file.stem
-            action = lang_menu.addAction(lang_code)
+            lang_name = self.locale_lang.get(lang_code,lang_code)
+            action = lang_menu.addAction(lang_name)
             action.setCheckable(True)
             action.setChecked(lang_code == self.config.settings.language)
             action.triggered.connect(lambda checked=False,code=lang_code: self.change_lang(code))
@@ -120,7 +150,7 @@ class MainWindow(QMainWindow):
             return
 
         for action in self.lang_menu.actions():
-            action.setChecked(action.text() == lang_code)
+            action.setChecked(action.text() == self.locale_lang.get(lang_code,lang_code))
 
         self.config.settings.language = lang_code
         self.config.save_settings()
