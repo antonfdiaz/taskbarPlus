@@ -130,15 +130,13 @@ class TaskbarButton(QAbstractButton):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
-        if self.item.id == "start":
-            self.icon_anim = QPropertyAnimation(self,b"hoverProgress",self)
+        self.icon_anim = QPropertyAnimation(self,b"hoverProgress",self)
+        if item.id == "start":
             transition = getattr(self.config.theme,"start_icon_transition",{}) or {}
             self.icon_anim.setDuration(transition.get("duration",200))
-            easing_name = transition.get("easing","InOutQuad")
-            self.icon_anim.setEasingCurve(getattr(QEasingCurve,easing_name,QEasingCurve.InOutQuad))
         else:
-            self.icon_anim = QPropertyAnimation(self,b"hoverProgress",self)
-            self.icon_anim.setDuration(0)
+            self.icon_anim.setDuration(150)
+        self.icon_anim.setEasingCurve(QEasingCurve.OutCubic)
 
         self.setMouseTracking(True)
         if item.id == "start":
@@ -192,23 +190,17 @@ class TaskbarButton(QAbstractButton):
 
     def enterEvent(self,event):
         self.hovered = True
-        if self.hover_icon:
-            self.icon_anim.stop()
-            self.icon_anim.setStartValue(self.hover_progress)
-            self.icon_anim.setEndValue(1.0)
-            self.icon_anim.start()
-        self.update()
+        self.icon_anim.stop()
+        self.set_hover_progress(1.0)
         super().enterEvent(event)
 
     def leaveEvent(self,event):
         self.hovered = False
         self.pressed = False
-        if self.hover_icon:
-            self.icon_anim.stop()
-            self.icon_anim.setStartValue(self.hover_progress)
-            self.icon_anim.setEndValue(0.0)
-            self.icon_anim.start()
-        self.update()
+        self.icon_anim.stop()
+        self.icon_anim.setStartValue(self.hover_progress)
+        self.icon_anim.setEndValue(0.0)
+        self.icon_anim.start()
         super().leaveEvent(event)
 
     def mousePressEvent(self,event):
@@ -229,16 +221,31 @@ class TaskbarButton(QAbstractButton):
         try:
             rect = self.rect()
 
-            bg = theme_color(self.config.theme.background)
-            if self.pressed:
-                bg = theme_color(self.config.theme.start_button_active if self.item.id == "start" else self.config.theme.active)
-            elif self.hovered:
-                bg = theme_color(self.config.theme.start_button_hover if self.item.id == "start" else self.config.theme.hover)
-            elif self.item.active:
-                bg = theme_color(self.config.theme.active)
+            #define background color
+            base_bg = theme_color(self.config.theme.background)
 
-            painter.fillRect(rect,bg)
+            hover_bg = theme_color(
+                self.config.theme.start_button_hover
+                if self.item.id == "start"
+                else self.config.theme.hover
+            )
 
+            active_bg = theme_color(
+                self.config.theme.start_button_active
+                if self.item.id == "start"
+                else self.config.theme.active
+            )
+
+            painter.fillRect(rect,base_bg)
+
+            if self.item.active or self.pressed:
+                painter.fillRect(rect,active_bg)
+            elif self.hover_progress > 0.0:
+                hover = QColor(hover_bg)
+                hover.setAlphaF(hover.alphaF()*self.hover_progress)
+                painter.fillRect(rect,hover)
+
+            #determine icon size
             if self.item.id == "start":
                 icon_size = self.config.theme.start_icon_size
             elif self.item.id == "search":
@@ -252,6 +259,7 @@ class TaskbarButton(QAbstractButton):
                 pix_default = self.scaled_start_pixmap(self.icon_pixmap,rect,icon_size)
             else:
                 pix_default = self.icon.pixmap(icon_size,icon_size)
+
             x = (rect.width()-pix_default.width())//2
             y = (rect.height()-pix_default.height())//2
 
