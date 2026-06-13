@@ -21,6 +21,16 @@ To get started with taskbarPlus, download the code and run it with Python.
 - Install libraries with `pip install -r requirements.txt`
 - Run the code with `py main.py`
 
+## Build from source
+To build the project and make an .exe, do the following steps:  
+
+- Do the same steps as above except the last one
+- Install Nuitka with `pip install nuitka`
+- Build by double clicking `build.bat`
+- To run it, just open `taskbarPlus.exe`
+
+After building, it is best to copy the files `taskbarPlus.exe`, `config/`, `assets/` and `l18n/` to a folder separate from the source code.
+
 ## Configuration
 
 taskbarPlus is configured using **JSON** files. The configuration folder is located at `taskbarPlus/config`. The user configuration is located at `taskbarPlus/config/user`. User configuration includes these files:
