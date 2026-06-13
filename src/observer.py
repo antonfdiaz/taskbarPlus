@@ -52,10 +52,8 @@ class ConfigHandler(FileSystemEventHandler):
 observer = Observer()
 event_handler = ConfigHandler()
 
-dir_to_watch = "config"
-observer.schedule(event_handler,dir_to_watch,recursive=True)
-
-def start():
+def start(config_dir="config"):
+    observer.schedule(event_handler,str(config_dir),recursive=True)
     observer.start()
     print("observer started")
     try:

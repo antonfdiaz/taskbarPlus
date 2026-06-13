@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     hide_taskbar()
 
-    observer_thread = Thread(target=observer.start,daemon=True)
+    observer_thread = Thread(target=observer.start,args=(config.config_dir,),daemon=True)
     observer_thread.start()
     
     sys.exit(app.exec())

@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
 
     def load_l18n(self):
         try:
-            self.l18n = L18n(f"i18n/{self.config.settings.language}.json")
+            self.l18n = L18n(self.config.i18n_dir/f"{self.config.settings.language}.json")
         except Exception as e:
             print("couldn't load language file, falling back to default:",e)
             msgbox = QMessageBox(self)
@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
             msgbox.setText("Couldn't load language file, falling back to default.")
             msgbox.setInformativeText(f"Error details:\n{e}")
             msgbox.exec()
-            self.l18n = L18n("i18n/en-US.json")
+            self.l18n = L18n(self.config.i18n_dir/"en-US.json")
 
     def setup_window(self):
         screen_size = QGuiApplication.primaryScreen().size()
@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
         lang_menu.setToolTipsVisible(True)
         lang_menu.setIcon(QIcon(self.config.resolve_asset("assets/language.png")).pixmap(16,16))
 
-        languages_dir = Path("i18n")
+        languages_dir = self.config.i18n_dir
         if not languages_dir.exists():
             return lang_menu
 

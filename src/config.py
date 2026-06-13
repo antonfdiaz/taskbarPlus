@@ -1,6 +1,7 @@
 import json
 from dataclasses import asdict,dataclass,field
 from pathlib import Path
+import sys
 
 APP_VERSION = "0.5.0"
 
@@ -97,9 +98,10 @@ class Config:
     def __init__(self,config_dir="config"):
         global APP_VERSION
 
-        self.config_dir = Path(config_dir)
-        self.root_dir = Path(__file__).resolve().parent.parent
+        self.root_dir = self._get_root_dir()
+        self.config_dir = self._resolve_app_path(config_dir)
         self.base_assets_dir = self.root_dir/"assets"
+        self.i18n_dir = self.root_dir/"i18n"
         self.skins_dir = self.config_dir/"skins"
         self.user_dir = self.config_dir/"user"
 
@@ -139,6 +141,19 @@ class Config:
         self.active_skin_dir = self.skins_dir/self.settings.skin
 
         self.version = APP_VERSION
+
+    def _get_root_dir(self) -> Path:
+        if getattr(sys,"frozen",False) or Path(sys.argv[0]).suffix.lower() == ".exe":
+            return Path(sys.argv[0]).resolve().parent
+
+        return Path(__file__).resolve().parent.parent
+
+    def _resolve_app_path(self,path: str | Path) -> Path:
+        app_path = Path(path)
+        if app_path.is_absolute():
+            return app_path
+
+        return self.root_dir/app_path
 
     def save_theme(self):
         with open(self.skins_dir/self.settings.skin/"theme.json","w",encoding="utf-8") as f:
