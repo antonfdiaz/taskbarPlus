@@ -29,7 +29,7 @@
     "start_button_hover": "#55555555",
     "start_button_active": "#44444444",
     "search_icon": "assets/search_dark.png",
-    "search_icon_size": 20,
+    "search_icon_size": 32,
     "search_button_width": 36,
     "search_button_height": 30,
     "search_box_width": 242,

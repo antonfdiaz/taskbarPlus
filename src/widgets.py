@@ -541,24 +541,34 @@ class SearchBox(QLineEdit):
         super().__init__()
         self.config = config
         self.l18n = l18n
+
+        self.search_icon = QIcon()
+        search_icon_path = self.config.resolve_asset(self.config.theme.search_icon)
+        if search_icon_path:
+            self.search_icon = QIcon(search_icon_path)
+
         self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         self.setFixedSize(
             self.config.theme.search_box_width+self.config.theme.padding_x*2,
             self.config.theme.search_box_height
         )
         self.setClearButtonEnabled(self.config.behavior.search.box_clear_button)
-        search_icon_path = self.config.resolve_asset(self.config.theme.search_icon)
-        self.addAction(QIcon(search_icon_path).pixmap(
-            self.config.theme.search_icon_size,
-            self.config.theme.search_icon_size
-        ),QLineEdit.LeadingPosition)
+
+        icon_size = self.config.theme.search_icon_size
+        icon_gap = self.config.theme.padding_x
+        left_padding = self.config.theme.padding_x+icon_size+icon_gap-10
+
         self.setStyleSheet(f"""
             background-color: {self.config.theme.search_box_background};
             color: {self.config.theme.search_box_foreground};
             border: none;
             font-size: 16px;
-            padding: {self.config.theme.padding_y}px {self.config.theme.padding_x}px;
+            padding-top: {self.config.theme.padding_y}px;
+            padding-bottom: {self.config.theme.padding_y}px;
+            padding-right: {self.config.theme.padding_x}px;
+            padding-left: {left_padding}px;
         """)
+
         if self.config.theme.search_box_height >= 35:
             self.setPlaceholderText(self.tr("taskbar.search.placeholder"))
         else:
@@ -592,9 +602,31 @@ class SearchBox(QLineEdit):
             return
         super().keyPressEvent(event)
 
+    def paintEvent(self,event):
+        super().paintEvent(event)
+
+        if self.search_icon.isNull():
+            return
+
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        try:
+            icon_size = self.config.theme.search_icon_size
+            pix = self.search_icon.pixmap(icon_size,icon_size)
+
+            painter.drawPixmap(4,(self.height()-pix.height())//2,pix)
+        finally:
+            painter.end()
+
     def launch_search(self,query=""):
         if self.config.behavior.search.engine == "everything":
-            thread = Thread(target=lambda: subprocess.run(f'"{self.config.behavior.search.everything_path}" -search "{query}"',shell=True))
+            thread = Thread(
+                target=lambda: subprocess.run(
+                    f'"{self.config.behavior.search.everything_path}" -search "{query}"',
+                    shell=True
+                )
+            )
             thread.start()
         elif self.config.behavior.search.engine == "windows_search":
             self.clearFocus()
