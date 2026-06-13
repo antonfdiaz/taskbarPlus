@@ -19,7 +19,7 @@
     "gap": 0,
     "tray_gap": 0,
     "start_icon_transition": {
-        "duration": 100,
+        "duration": 120,
         "easing": "InOutQuad"
     },
     "start_icon": "assets/start.png",
