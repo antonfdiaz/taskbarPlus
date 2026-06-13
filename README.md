@@ -13,7 +13,7 @@ taskbarPlus is a very customizable taskbar replacement for Windows.
 - And more!
 
 ## How to run
-To get started with taskbarPlus, download the code and run it with Python.  
+To get started with taskbarPlus, download the code and run it with Python, or download a [prebuilt release](https://github.com/antonfdiaz/taskbarPlus/releases).  
 
 - CD to the project folder with: `cd PATH/TO/SOURCE`
 - Make a venv inside the project folder with `py -m venv .venv`
