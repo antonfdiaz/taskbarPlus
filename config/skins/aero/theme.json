@@ -3,7 +3,7 @@
     "taskbar_texture": "assets/taskbar.png",
     "taskbar_texture_mode": "stretch",
     "taskbar_blur": true,
-    "taskbar_blur_tint": "#cc202020",
+    "taskbar_blur_tint": "#66202020",
     "background": "#00000000",
     "foreground": "#ffffff",
     "hover": "#00000000",
