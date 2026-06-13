@@ -2,7 +2,7 @@
 
 taskbarPlus is a very customizable taskbar replacement for Windows.  
 
-<img alt="preview" src="https://github.com/user-attachments/assets/9fd05844-d426-4784-b5ae-a57879876ccd">
+<img alt="preview" src="https://github.com/user-attachments/assets/2d1f3737-c39b-401a-aba3-75800d72ea74">
 
 ## Features
 
