@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
         self.menu.addMenu(self.skins_menu)
         self.lang_menu = self.create_lang_menu()
         self.menu.addMenu(self.lang_menu)
-        self.menu.addAction("About...",self.show_about_dialog).setIcon(QIcon(self.config.resolve_asset("assets/info.png")).pixmap(16,16))
+        self.menu.addAction(self.tr("taskbar.menu.about"),self.show_about_dialog).setIcon(QIcon(self.config.resolve_asset("assets/info.png")).pixmap(16,16))
         self.menu.addAction(self.tr("taskbar.menu.refresh"),self.rebuild_ui).setIcon(QIcon(self.config.resolve_asset("assets/refresh.png")).pixmap(16,16))
         self.menu.addAction(self.tr("taskbar.menu.exit"),self.close).setIcon(QIcon(self.config.resolve_asset("assets/close.png")).pixmap(16,16))
 
@@ -98,9 +98,9 @@ class MainWindow(QMainWindow):
         msg = QMessageBox(self)
         msg.setStyleSheet(f"background-color: {self.config.theme.menu_background}; color: {self.config.theme.menu_foreground};")
         msg.setIcon(QMessageBox.Information)
-        msg.setWindowTitle("About taskbarPlus")
+        msg.setWindowTitle(self.tr("taskbar.about.title"))
         msg.setText(f"taskbarPlus {self.config.version}")
-        msg.setInformativeText("A very customizable taskbar replacement for Windows.")
+        msg.setInformativeText(self.tr("taskbar.about.description"))
         msg.exec()
 
     def create_lang_menu(self) -> QMenu:

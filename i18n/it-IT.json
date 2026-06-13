@@ -2,6 +2,7 @@
 	"taskbar.menu.task_manager": "Gestione attività",
 	"taskbar.menu.skins": "Skins",
     "taskbar.menu.language": "Lingua",
+	"taskbar.menu.about": "Informazioni...",
 	"taskbar.menu.refresh": "Aggiorna",
 	"taskbar.menu.exit": "Esci",
 	"taskbar.menu.new_win": "Apri nuova finestra",
@@ -12,5 +13,7 @@
 	"taskbar.button.task_view": "Visualizzazione attività",
 	"taskbar.search.placeholder": "Digita qui per eseguire la ricerca",
     "taskbar.search.placeholder_short": "Cerca",
-	"taskbar.skin.tooltip": "Autore: {metadata.author}\nVersione: {metadata.version}"
+	"taskbar.skin.tooltip": "Autore: {metadata.author}\nVersione: {metadata.version}",
+	"taskbar.about.title": "Informazioni su taskbarPlus",
+	"taskbar.about.description": "Un sostituto della barra delle applicazioni per Windows altamente personalizzabile."
 }

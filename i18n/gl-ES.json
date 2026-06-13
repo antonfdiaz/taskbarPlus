@@ -2,6 +2,7 @@
 	"taskbar.menu.task_manager": "Administrador de tarefas",
 	"taskbar.menu.skins": "Skins",
 	"taskbar.menu.language": "Idioma",
+	"taskbar.menu.about": "Acerca de...",
 	"taskbar.menu.refresh": "Actualizar",
 	"taskbar.menu.exit": "Saír",
 	"taskbar.menu.new_win": "Abrir nova xanela",
@@ -12,5 +13,7 @@
 	"taskbar.button.task_view": "Vista de tarefas",
 	"taskbar.search.placeholder": "Escribe aquí para buscar.",
 	"taskbar.search.placeholder_short": "Buscar",
-	"taskbar.skin.tooltip": "Autor: {metadata.author}\nVersión: {metadata.version}"
+	"taskbar.skin.tooltip": "Autor: {metadata.author}\nVersión: {metadata.version}",
+	"taskbar.about.title": "Acerca de taskbarPlus",
+	"taskbar.about.description": "Un substituto moi personalizable da barra de tarefas para Windows."
 }

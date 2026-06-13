@@ -2,6 +2,7 @@
 	"taskbar.menu.task_manager": "任务管理器",
 	"taskbar.menu.skins": "Skins",
 	"taskbar.menu.language": "语言",
+	"taskbar.menu.about": "关于...",
 	"taskbar.menu.refresh": "刷新",
 	"taskbar.menu.exit": "退出",
 	"taskbar.menu.new_win": "打开新窗口",
@@ -12,5 +13,7 @@
 	"taskbar.button.task_view": "任务视图",
 	"taskbar.search.placeholder": "在此键入以搜索",
 	"taskbar.search.placeholder_short": "搜索",
-	"taskbar.skin.tooltip": "作者: {metadata.author}\n版本: {metadata.version}"
+	"taskbar.skin.tooltip": "作者: {metadata.author}\n版本: {metadata.version}",
+	"taskbar.about.title": "关于 taskbarPlus",
+	"taskbar.about.description": "一个高度可自定义的 Windows 任务栏替代品。"
 }

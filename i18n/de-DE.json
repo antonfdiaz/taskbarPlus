@@ -2,6 +2,7 @@
 	"taskbar.menu.task_manager": "Task-Manager",
 	"taskbar.menu.skins": "Skins",
 	"taskbar.menu.language": "Sprache",
+	"taskbar.menu.about": "Info...",
 	"taskbar.menu.refresh": "Aktualisieren",
 	"taskbar.menu.exit": "Beenden",
 	"taskbar.menu.new_win": "Neues Fenster öffnen",
@@ -12,5 +13,7 @@
 	"taskbar.button.task_view": "Taskansicht",
 	"taskbar.search.placeholder": "Zur Suche Text hier eingeben",
 	"taskbar.search.placeholder_short": "Suche",
-	"taskbar.skin.tooltip": "Autor: {metadata.author}\nVersion: {metadata.version}"
+	"taskbar.skin.tooltip": "Autor: {metadata.author}\nVersion: {metadata.version}",
+	"taskbar.about.title": "Info zu taskbarPlus",
+	"taskbar.about.description": "Ein sehr anpassbarer Taskleistenersatz für Windows."
 }

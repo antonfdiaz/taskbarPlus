@@ -2,6 +2,7 @@
 	"taskbar.menu.task_manager": "Gestionnaire des tâches",
 	"taskbar.menu.skins": "Skins",
     "taskbar.menu.language": "Langue",
+	"taskbar.menu.about": "À propos...",
 	"taskbar.menu.refresh": "Actualiser",
 	"taskbar.menu.exit": "Quitter",
 	"taskbar.menu.new_win": "Ouvrir une nouvelle fenêtre",
@@ -12,5 +13,7 @@
 	"taskbar.button.task_view": "Affichage des tâches",
 	"taskbar.search.placeholder": "Tapez ici pour rechercher",
     "taskbar.search.placeholder_short": "Rechercher",
-	"taskbar.skin.tooltip": "Auteur: {metadata.author}\nVersion: {metadata.version}"
+	"taskbar.skin.tooltip": "Auteur: {metadata.author}\nVersion: {metadata.version}",
+	"taskbar.about.title": "À propos de taskbarPlus",
+	"taskbar.about.description": "Un remplacement très personnalisable de la barre des tâches pour Windows."
 }

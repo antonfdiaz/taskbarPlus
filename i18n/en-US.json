@@ -2,6 +2,7 @@
 	"taskbar.menu.task_manager": "Task Manager",
 	"taskbar.menu.skins": "Skins",
     "taskbar.menu.language": "Language",
+	"taskbar.menu.about": "About...",
 	"taskbar.menu.refresh": "Refresh",
 	"taskbar.menu.exit": "Exit",
 	"taskbar.menu.new_win": "Open new window",
@@ -12,5 +13,7 @@
 	"taskbar.button.task_view": "Task View",
 	"taskbar.search.placeholder": "Type here to search",
     "taskbar.search.placeholder_short": "Search",
-	"taskbar.skin.tooltip": "Author: {metadata.author}\nVersion: {metadata.version}"
+	"taskbar.skin.tooltip": "Author: {metadata.author}\nVersion: {metadata.version}",
+	"taskbar.about.title": "About taskbarPlus",
+	"taskbar.about.description": "A very customizable taskbar replacement for Windows."
 }
