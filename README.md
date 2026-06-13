@@ -28,7 +28,7 @@ To get started with taskbarPlus, download the code and run it with Python, or do
 To build the project and make an .exe, do the following steps:  
 
 - Do the same steps as above except the last one
-- Install Nuitka with `pip install nuitka`
+- Install build deps with `pip install nuitka imageio`
 - Build by double clicking `build.bat`
 - To run it, just open `taskbarPlus.exe`
 
