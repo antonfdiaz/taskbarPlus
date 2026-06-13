@@ -225,3 +225,6 @@ main.dist
 main.onefile-build
 .nuitka-cache/
 nuitka-crash-report.xml
+
+#ds store thing
+.DS_Store
