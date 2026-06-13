@@ -23,13 +23,17 @@ To get started with taskbarPlus, download the code and run it with Python.
 
 ## Configuration
 
-taskbarPlus is configured using **JSON** files. The configuration folder is located at `taskbarPlus/config`. The user configuration is located at `taskbarPlus/config/user`.
+taskbarPlus is configured using **JSON** files. The configuration folder is located at `taskbarPlus/config`. The user configuration is located at `taskbarPlus/config/user`. User configuration includes these files:
+- `behavior.json`: Defines clock settings and search function settings.
+- `settings.json`: Defines the active language and skin.
+- `apps.json`: Defines the apps pinned in the taskbar.
 
 ## Skins
 
 Skins are located at `taskbarPlus/config/skins`. You can create your own skins by creating a new folder in the skins directory and adding `metadata.json`, `theme.json` and `layout.json` and any necessary icons in the `assets` folder.
 
-Normally it is easier to start by copying an existing skin and modifying it to suit your needs.
+Normally it is easier to start by copying an existing skin and modifying it to suit your needs.  
+Documentation for making skins is coming soon.
 
 taskbarPlus comes with 3 default skins:
 
