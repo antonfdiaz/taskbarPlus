@@ -28,6 +28,7 @@ class MainWindow(QMainWindow):
         self.dynamic_app_order: list[str] = []
         self.apps_bars: list[TaskbarAppsBar] = []
         self.tray_widgets: list[TrayWidget] = []
+        self.tray_collapsed = False
         self.tray_items: list[TrayItem] = []
         self.apps_refresh_pending = False
         self.config_reload_requested.connect(self.reload_from_disk)
@@ -321,11 +322,18 @@ class MainWindow(QMainWindow):
                 widget.appDropped.connect(self.pin_app_from_path)
                 self.apps_bars.append(widget)
             elif section == "tray":
+                collapse_button = TrayCollapseButton(self.config)
                 tray_items = self.build_tray_items()
                 widget = TrayWidget(tray_items,self.config)
+                widget.set_collapsed(self.tray_collapsed)
+                collapse_button.set_collapsed(self.tray_collapsed)
+                collapse_button.clicked.connect(
+                    lambda checked=False,tray_widget=widget,button=collapse_button: self.toggle_tray_widget(tray_widget,button)
+                )
                 widget.itemClicked.connect(self.on_tray_item_clicked)
                 widget.itemRightClicked.connect(self.on_tray_item_right_clicked)
                 self.tray_widgets.append(widget)
+                section_layout.addWidget(collapse_button)
             elif section == "clock":
                 widget = ClockWidget(self.config,show_date=self.config.behavior.clock.show_date,show_time=self.config.behavior.clock.show_time)
             elif section == "show_desktop":
@@ -336,6 +344,11 @@ class MainWindow(QMainWindow):
             section_layout.addWidget(widget)
 
         return container
+
+    def toggle_tray_widget(self,tray_widget: TrayWidget,collapse_button: TrayCollapseButton):
+        tray_widget.toggle_collapsed()
+        self.tray_collapsed = tray_widget.collapsed
+        collapse_button.set_collapsed(tray_widget.collapsed)
     
     def build_tray_items(self) -> list[TrayIcon]:
         items = []

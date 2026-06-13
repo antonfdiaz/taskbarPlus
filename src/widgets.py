@@ -439,19 +439,22 @@ class ShowDesktopButton(QAbstractButton):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        rect = self.rect()
+        try:
+            rect = self.rect()
 
-        bg = theme_color(self.config.theme.background)
-        if self.pressed:
-            bg = theme_color(self.config.theme.active)
-        elif self.hovered:
-            bg = theme_color(self.config.theme.hover)
+            bg = theme_color(self.config.theme.background)
+            if self.pressed:
+                bg = theme_color(self.config.theme.active)
+            elif self.hovered:
+                bg = theme_color(self.config.theme.hover)
 
-        painter.fillRect(rect,bg)
+            painter.fillRect(rect,bg)
 
-        #draw border on the left side
-        painter.setPen(QPen(theme_color(self.config.theme.show_desktop_border_color),1))
-        painter.drawLine(rect.topLeft(),rect.bottomLeft())
+            #draw border on the left side
+            painter.setPen(QPen(theme_color(self.config.theme.show_desktop_border_color),1))
+            painter.drawLine(rect.topLeft(),rect.bottomLeft())
+        finally:
+            painter.end()
     
     def mouseReleaseEvent(self,event):
         if event.button() == Qt.LeftButton:
@@ -474,6 +477,8 @@ class TrayWidget(QWidget):
         """)
 
         self.items = items
+        self.collapsed = False
+        self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0,0,0,0)
         self.layout.setSpacing(self.config.theme.tray_gap)
@@ -482,13 +487,15 @@ class TrayWidget(QWidget):
 
     def set_items(self,items: list[TrayIcon]):
         self.items = items
-        self.rebuild()
+        if not self.collapsed:
+            self.rebuild()
 
     def rebuild(self):
         while self.layout.count():
             child = self.layout.takeAt(0)
             widget = child.widget()
             if widget is not None:
+                widget.hide()
                 widget.deleteLater()
                 
         for item in self.items:
@@ -497,6 +504,29 @@ class TrayWidget(QWidget):
             )
             item.rightClicked.connect(self.itemRightClicked.emit)
             self.layout.addWidget(item)
+
+        self.adjustSize()
+        self.updateGeometry()
+        if self.parentWidget() is not None:
+            self.parentWidget().updateGeometry()
+
+    def set_collapsed(self,collapsed: bool):
+        if self.collapsed == collapsed:
+            return
+
+        self.collapsed = collapsed
+        if self.collapsed:
+            self.setVisible(False)
+        else:
+            self.rebuild()
+            self.setVisible(True)
+
+        self.updateGeometry()
+        if self.parentWidget() is not None:
+            self.parentWidget().updateGeometry()
+
+    def toggle_collapsed(self):
+        self.set_collapsed(not self.collapsed)
 
 class TrayIcon(QAbstractButton):
     rightClicked = Signal(object)
@@ -552,23 +582,26 @@ class TrayIcon(QAbstractButton):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        rect = self.rect()
+        try:
+            rect = self.rect()
 
-        bg = theme_color(self.config.theme.background)
-        if self.pressed:
-            bg = theme_color(self.config.theme.active)
-        elif self.hovered:
-            bg = theme_color(self.config.theme.hover)
+            bg = theme_color(self.config.theme.background)
+            if self.pressed:
+                bg = theme_color(self.config.theme.active)
+            elif self.hovered:
+                bg = theme_color(self.config.theme.hover)
 
-        painter.fillRect(rect,bg)
+            painter.fillRect(rect,bg)
 
-        icon_size = self.config.theme.tray_icon_size
-        icon = self.hover_icon if self.hovered and self.hover_icon else self.icon
-        pix = icon.pixmap(icon_size,icon_size)
+            icon_size = self.config.theme.tray_icon_size
+            icon = self.hover_icon if self.hovered and self.hover_icon else self.icon
+            pix = icon.pixmap(icon_size,icon_size)
 
-        x = (rect.width()-pix.width())//2
-        y = (rect.height()-pix.height())//2
-        painter.drawPixmap(x,y,pix)
+            x = (rect.width()-pix.width())//2
+            y = (rect.height()-pix.height())//2
+            painter.drawPixmap(x,y,pix)
+        finally:
+            painter.end()
 
 class SearchBox(QLineEdit):
     def __init__(self,config: Config,l18n: L18n):
@@ -687,3 +720,71 @@ class SearchBox(QLineEdit):
             press_key(win32con.VK_LWIN)
             tap_key(ord("S"))
             release_key(win32con.VK_LWIN)
+
+class TrayCollapseButton(QAbstractButton):
+    def __init__(self,config: Config,parent=None):
+        super().__init__(parent)
+        self.config = config
+        self.hovered = False
+        self.pressed = False
+        self.collapsed = False
+
+        self.expanded_icon = QIcon(self.config.resolve_asset("assets/chevron-right.png"))
+        self.collapsed_icon = QIcon(self.config.resolve_asset("assets/chevron-left.png"))
+        self.icon = self.expanded_icon
+
+        self.setMouseTracking(True)
+        self.setFixedSize(
+            self.config.theme.tray_icon_size+self.config.theme.padding_x,
+            self.config.theme.button_height
+        )
+
+    def set_collapsed(self,collapsed: bool):
+        self.collapsed = collapsed
+        self.icon = self.collapsed_icon if self.collapsed else self.expanded_icon
+        self.update()
+
+    def enterEvent(self,event):
+        self.hovered = True
+        self.update()
+        super().enterEvent(event)
+
+    def leaveEvent(self,event):
+        self.hovered = False
+        self.pressed = False
+        self.update()
+        super().leaveEvent(event)
+
+    def mousePressEvent(self,event):
+        if event.button() == Qt.LeftButton:
+            self.pressed = True
+            self.update()
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self,event):
+        self.pressed = False
+        self.update()
+        super().mouseReleaseEvent(event)
+
+    def paintEvent(self,event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        try:
+            rect = self.rect()
+
+            bg = theme_color(self.config.theme.background)
+            if self.pressed:
+                bg = theme_color(self.config.theme.active)
+            elif self.hovered:
+                bg = theme_color(self.config.theme.hover)
+
+            painter.fillRect(rect,bg)
+
+            icon_size = self.config.theme.tray_icon_size
+            pix = self.icon.pixmap(icon_size,icon_size)
+            x = (rect.width()-pix.width())//2
+            y = (rect.height()-pix.height())//2
+            painter.drawPixmap(x,y,pix)
+        finally:
+            painter.end()
