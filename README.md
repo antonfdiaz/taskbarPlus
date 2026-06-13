@@ -33,7 +33,7 @@ taskbarPlus is configured using **JSON** files. The configuration folder is loca
 Skins are located at `taskbarPlus/config/skins`. You can create your own skins by creating a new folder in the skins directory and adding `metadata.json`, `theme.json` and `layout.json` and any necessary icons in the `assets` folder.
 
 Normally it is easier to start by copying an existing skin and modifying it to suit your needs.  
-Documentation for making skins is probably coming soon.
+Documentation for making skins is coming soon.
 
 taskbarPlus comes with 3 default skins:
 
