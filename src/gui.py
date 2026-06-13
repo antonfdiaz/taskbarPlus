@@ -16,6 +16,7 @@ from src.win_observer import WindowEventWatcher
 import subprocess
 import win32gui
 import win32con
+import base64
 import os
 
 class MainWindow(QMainWindow):
@@ -90,8 +91,20 @@ class MainWindow(QMainWindow):
         self.menu.addMenu(self.skins_menu)
         self.lang_menu = self.create_lang_menu()
         self.menu.addMenu(self.lang_menu)
+        self.menu.addAction("About...",self.show_about_dialog).setIcon(QIcon(self.config.resolve_asset("assets/info.png")).pixmap(16,16))
         self.menu.addAction(self.tr("taskbar.menu.refresh"),self.rebuild_ui).setIcon(QIcon(self.config.resolve_asset("assets/refresh.png")).pixmap(16,16))
         self.menu.addAction(self.tr("taskbar.menu.exit"),self.close).setIcon(QIcon(self.config.resolve_asset("assets/close.png")).pixmap(16,16))
+
+    def show_about_dialog(self):
+        msg = QMessageBox(self)
+        msg.setStyleSheet(f"background-color: {self.config.theme.menu_background}; color: {self.config.theme.menu_foreground};")
+        msg.setIcon(QMessageBox.Information)
+        msg.setWindowTitle("About taskbarPlus")
+        version = open(Path(__file__).parent.parent/"version.txt","r",encoding="utf-8").read().strip()
+        version = base64.b64decode(version).decode("utf-8")
+        msg.setText(f"taskbarPlus {version}")
+        msg.setInformativeText("A very customizable taskbar replacement for Windows.")
+        msg.exec()
 
     def create_lang_menu(self) -> QMenu:
         self.locale_lang = {
