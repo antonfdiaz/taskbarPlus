@@ -126,18 +126,24 @@ class TaskbarButton(QAbstractButton):
         self.hovered = False
         self.pressed = False
         self.bg_hover_progress = 0.0
+        self.icon_hover_progress = 0.0
         self.indicator_hover_progress = 0.0
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
         self.bg_anim = QPropertyAnimation(self,b"bgHoverProgress",self)
+        self.bg_anim.setDuration(150)
+        self.bg_anim.setEasingCurve(QEasingCurve.OutCubic)
+
+        self.icon_anim = QPropertyAnimation(self,b"iconHoverProgress",self)
         if item.id == "start":
             transition = getattr(self.config.theme,"start_icon_transition",{}) or {}
-            self.bg_anim.setDuration(transition.get("duration",200))
+            self.icon_anim.setDuration(transition.get("duration",200))
+            self.icon_anim.setEasingCurve(self.easing_curve(transition.get("easing"),QEasingCurve.OutCubic))
         else:
-            self.bg_anim.setDuration(150)
-        self.bg_anim.setEasingCurve(QEasingCurve.OutCubic)
+            self.icon_anim.setDuration(150)
+            self.icon_anim.setEasingCurve(QEasingCurve.OutCubic)
 
         self.indicator_anim = QPropertyAnimation(self,b"indicatorHoverProgress",self)
         self.indicator_anim.setDuration(150)
@@ -193,6 +199,15 @@ class TaskbarButton(QAbstractButton):
 
     bgHoverProgress = Property(float,get_bg_hover_progress,set_bg_hover_progress)
 
+    def get_icon_hover_progress(self):
+        return self.icon_hover_progress
+
+    def set_icon_hover_progress(self,value):
+        self.icon_hover_progress = float(value)
+        self.update()
+
+    iconHoverProgress = Property(float,get_icon_hover_progress,set_icon_hover_progress)
+
     def get_indicator_hover_progress(self):
         return self.indicator_hover_progress
 
@@ -207,6 +222,11 @@ class TaskbarButton(QAbstractButton):
 
         self.bg_anim.stop()
         self.set_bg_hover_progress(1.0)
+
+        self.icon_anim.stop()
+        self.icon_anim.setStartValue(self.icon_hover_progress)
+        self.icon_anim.setEndValue(1.0)
+        self.icon_anim.start()
 
         self.indicator_anim.stop()
         self.indicator_anim.setStartValue(self.indicator_hover_progress)
@@ -223,6 +243,11 @@ class TaskbarButton(QAbstractButton):
         self.bg_anim.setStartValue(self.bg_hover_progress)
         self.bg_anim.setEndValue(0.0)
         self.bg_anim.start()
+
+        self.icon_anim.stop()
+        self.icon_anim.setStartValue(self.icon_hover_progress)
+        self.icon_anim.setEndValue(0.0)
+        self.icon_anim.start()
 
         self.indicator_anim.stop()
         self.indicator_anim.setStartValue(self.indicator_hover_progress)
@@ -303,10 +328,10 @@ class TaskbarButton(QAbstractButton):
                 else:
                     pix_hover = self.hover_icon.pixmap(icon_size,icon_size)
 
-                painter.setOpacity((1.0-self.bg_hover_progress)*self.config.theme.icon_opacity)
+                painter.setOpacity((1.0-self.icon_hover_progress)*self.config.theme.icon_opacity)
                 painter.drawPixmap(x,y,pix_default)
 
-                painter.setOpacity(self.bg_hover_progress*self.config.theme.icon_opacity)
+                painter.setOpacity(self.icon_hover_progress*self.config.theme.icon_opacity)
                 painter.drawPixmap(x,y,pix_hover)
 
                 painter.setOpacity(self.config.theme.icon_opacity)
@@ -317,6 +342,15 @@ class TaskbarButton(QAbstractButton):
             self.draw_indicator(painter,rect)
         finally:
             painter.end()
+
+    def easing_curve(self,name: str | None,default):
+        if not name:
+            return default
+
+        easing_type = getattr(QEasingCurve.Type,name,None)
+        if easing_type is None:
+            easing_type = getattr(QEasingCurve,name,None)
+        return easing_type if easing_type is not None else default
 
     def scaled_start_pixmap(self,pixmap: QPixmap,rect: QRect,icon_size: int) -> QPixmap:
         if pixmap.isNull():
