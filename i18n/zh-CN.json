@@ -1,0 +1,16 @@
+{
+	"taskbar.menu.task_manager": "任务管理器",
+	"taskbar.menu.skins": "Skins",
+	"taskbar.menu.language": "语言",
+	"taskbar.menu.refresh": "刷新",
+	"taskbar.menu.exit": "退出",
+	"taskbar.menu.new_win": "打开新窗口",
+	"taskbar.menu.pin": "固定到任务栏",
+	"taskbar.menu.unpin": "从任务栏取消固定",
+	"taskbar.button.start": "开始",
+	"taskbar.button.search": "搜索",
+	"taskbar.button.task_view": "任务视图",
+	"taskbar.search.placeholder": "在此键入以搜索",
+	"taskbar.search.placeholder_short": "搜索",
+	"taskbar.skin.tooltip": "作者: {metadata.author}\n版本: {metadata.version}"
+}

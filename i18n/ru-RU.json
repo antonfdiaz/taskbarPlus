@@ -1,0 +1,16 @@
+{
+	"taskbar.menu.task_manager": "Диспетчер задач",
+	"taskbar.menu.skins": "Skins",
+	"taskbar.menu.language": "Язык",
+	"taskbar.menu.refresh": "Обновить",
+	"taskbar.menu.exit": "Выход",
+	"taskbar.menu.new_win": "Открыть новое окно",
+	"taskbar.menu.pin": "Закрепить на панели задач",
+	"taskbar.menu.unpin": "Открепить от панели задач",
+	"taskbar.button.start": "Пуск",
+	"taskbar.button.search": "Поиск",
+	"taskbar.button.task_view": "Представление задач",
+	"taskbar.search.placeholder": "Введите текст для поиска",
+	"taskbar.search.placeholder_short": "Поиск",
+	"taskbar.skin.tooltip": "Автор: {metadata.author}\nВерсия: {metadata.version}"
+}
