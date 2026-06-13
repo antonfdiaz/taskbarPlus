@@ -570,9 +570,15 @@ class SearchBox(QLineEdit):
         """)
 
         if self.config.theme.search_box_height >= 35:
-            self.setPlaceholderText(self.tr("taskbar.search.placeholder"))
+            self.placeholder_value = self.tr("taskbar.search.placeholder")
         else:
-            self.setPlaceholderText(self.tr("taskbar.search.placeholder_short"))
+            self.placeholder_value = self.tr("taskbar.search.placeholder_short")
+
+        self.placeholder_color = QColor("#333333")
+
+        font = self.font()
+        font.setLetterSpacing(QFont.AbsoluteSpacing,0)
+        self.setFont(font)
 
     def tr(self,key):
         return self.l18n.tr(key)
@@ -605,17 +611,31 @@ class SearchBox(QLineEdit):
     def paintEvent(self,event):
         super().paintEvent(event)
 
-        if self.search_icon.isNull():
-            return
-
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
         try:
             icon_size = self.config.theme.search_icon_size
-            pix = self.search_icon.pixmap(icon_size,icon_size)
 
-            painter.drawPixmap(4,(self.height()-pix.height())//2,pix)
+            if not self.search_icon.isNull():
+                pix = self.search_icon.pixmap(icon_size,icon_size)
+                painter.drawPixmap(4,(self.height()-pix.height())//2,pix)
+
+            if not self.text() and not self.hasFocus() and self.placeholder_value:
+                painter.setPen(self.placeholder_color)
+
+                text_x = self.config.theme.padding_x+icon_size+self.config.theme.padding_x-8
+                text_rect = QRect(
+                    text_x,-1,
+                    self.width()-text_x-self.config.theme.padding_x,
+                    self.height()
+                )
+
+                painter.drawText(
+                    text_rect,
+                    Qt.AlignVCenter | Qt.AlignLeft,
+                    self.placeholder_value
+                )
         finally:
             painter.end()
 
