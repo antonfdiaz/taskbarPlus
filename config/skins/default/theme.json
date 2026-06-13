@@ -23,7 +23,7 @@
         "easing": "InOutQuad"
     },
     "start_icon": "assets/start.png",
-    "start_icon_size": 22,
+    "start_icon_size": 32,
     "start_button_width": 36,
     "start_button_height": 30,
     "start_button_hover": "#55555555",
