@@ -16,7 +16,6 @@ from src.win_observer import WindowEventWatcher
 import subprocess
 import win32gui
 import win32con
-import base64
 import os
 
 class MainWindow(QMainWindow):
@@ -100,9 +99,7 @@ class MainWindow(QMainWindow):
         msg.setStyleSheet(f"background-color: {self.config.theme.menu_background}; color: {self.config.theme.menu_foreground};")
         msg.setIcon(QMessageBox.Information)
         msg.setWindowTitle("About taskbarPlus")
-        version = open(Path(__file__).parent.parent/"version.txt","r",encoding="utf-8").read().strip()
-        version = base64.b64decode(version).decode("utf-8")
-        msg.setText(f"taskbarPlus {version}")
+        msg.setText(f"taskbarPlus {self.config.version}")
         msg.setInformativeText("A very customizable taskbar replacement for Windows.")
         msg.exec()
 

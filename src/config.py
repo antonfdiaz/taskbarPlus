@@ -2,6 +2,8 @@ import json
 from dataclasses import asdict,dataclass,field
 from pathlib import Path
 
+APP_VERSION = "0.5.0"
+
 @dataclass
 class LayoutConfig:
     left: list
@@ -93,6 +95,8 @@ class SkinMetadata:
 
 class Config:
     def __init__(self,config_dir="config"):
+        global APP_VERSION
+
         self.config_dir = Path(config_dir)
         self.root_dir = Path(__file__).resolve().parent.parent
         self.base_assets_dir = self.root_dir/"assets"
@@ -133,6 +137,8 @@ class Config:
         #get active skin
         self.active_skin_id = self.settings.skin
         self.active_skin_dir = self.skins_dir/self.settings.skin
+
+        self.version = APP_VERSION
 
     def save_theme(self):
         with open(self.skins_dir/self.settings.skin/"theme.json","w",encoding="utf-8") as f:
