@@ -125,18 +125,23 @@ class TaskbarButton(QAbstractButton):
         self.active_icon_pixmap = item.active_icon_pixmap
         self.hovered = False
         self.pressed = False
-        self.hover_progress = 0.0
+        self.bg_hover_progress = 0.0
+        self.indicator_hover_progress = 0.0
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
-        self.icon_anim = QPropertyAnimation(self,b"hoverProgress",self)
+        self.bg_anim = QPropertyAnimation(self,b"bgHoverProgress",self)
         if item.id == "start":
             transition = getattr(self.config.theme,"start_icon_transition",{}) or {}
-            self.icon_anim.setDuration(transition.get("duration",200))
+            self.bg_anim.setDuration(transition.get("duration",200))
         else:
-            self.icon_anim.setDuration(150)
-        self.icon_anim.setEasingCurve(QEasingCurve.OutCubic)
+            self.bg_anim.setDuration(150)
+        self.bg_anim.setEasingCurve(QEasingCurve.OutCubic)
+
+        self.indicator_anim = QPropertyAnimation(self,b"indicatorHoverProgress",self)
+        self.indicator_anim.setDuration(150)
+        self.indicator_anim.setEasingCurve(QEasingCurve.OutCubic)
 
         self.setMouseTracking(True)
         if item.id == "start":
@@ -179,28 +184,51 @@ class TaskbarButton(QAbstractButton):
         pin_action.triggered.connect(lambda: self.itemAction.emit(self.item,"pin"))
         menu.exec(self.mapToGlobal(pos))
 
-    def get_hover_progress(self):
-        return self.hover_progress
+    def get_bg_hover_progress(self):
+        return self.bg_hover_progress
 
-    def set_hover_progress(self,value):
-        self.hover_progress = float(value)
+    def set_bg_hover_progress(self,value):
+        self.bg_hover_progress = float(value)
         self.update()
 
-    hoverProgress = Property(float,get_hover_progress,set_hover_progress)
+    bgHoverProgress = Property(float,get_bg_hover_progress,set_bg_hover_progress)
+
+    def get_indicator_hover_progress(self):
+        return self.indicator_hover_progress
+
+    def set_indicator_hover_progress(self,value):
+        self.indicator_hover_progress = float(value)
+        self.update()
+
+    indicatorHoverProgress = Property(float,get_indicator_hover_progress,set_indicator_hover_progress)
 
     def enterEvent(self,event):
         self.hovered = True
-        self.icon_anim.stop()
-        self.set_hover_progress(1.0)
+
+        self.bg_anim.stop()
+        self.set_bg_hover_progress(1.0)
+
+        self.indicator_anim.stop()
+        self.indicator_anim.setStartValue(self.indicator_hover_progress)
+        self.indicator_anim.setEndValue(1.0)
+        self.indicator_anim.start()
+
         super().enterEvent(event)
 
-    def leaveEvent(self,event):
+    def leaveEvent(self, event):
         self.hovered = False
         self.pressed = False
-        self.icon_anim.stop()
-        self.icon_anim.setStartValue(self.hover_progress)
-        self.icon_anim.setEndValue(0.0)
-        self.icon_anim.start()
+
+        self.bg_anim.stop()
+        self.bg_anim.setStartValue(self.bg_hover_progress)
+        self.bg_anim.setEndValue(0.0)
+        self.bg_anim.start()
+
+        self.indicator_anim.stop()
+        self.indicator_anim.setStartValue(self.indicator_hover_progress)
+        self.indicator_anim.setEndValue(0.0)
+        self.indicator_anim.start()
+
         super().leaveEvent(event)
 
     def mousePressEvent(self,event):
@@ -240,9 +268,9 @@ class TaskbarButton(QAbstractButton):
 
             if self.item.active or self.pressed:
                 painter.fillRect(rect,active_bg)
-            elif self.hover_progress > 0.0:
+            elif self.bg_hover_progress > 0.0:
                 hover = QColor(hover_bg)
-                hover.setAlphaF(hover.alphaF()*self.hover_progress)
+                hover.setAlphaF(hover.alphaF()*self.bg_hover_progress)
                 painter.fillRect(rect,hover)
 
             #determine icon size
@@ -275,10 +303,10 @@ class TaskbarButton(QAbstractButton):
                 else:
                     pix_hover = self.hover_icon.pixmap(icon_size,icon_size)
 
-                painter.setOpacity((1.0-self.hover_progress)*self.config.theme.icon_opacity)
+                painter.setOpacity((1.0-self.bg_hover_progress)*self.config.theme.icon_opacity)
                 painter.drawPixmap(x,y,pix_default)
 
-                painter.setOpacity(self.hover_progress*self.config.theme.icon_opacity)
+                painter.setOpacity(self.bg_hover_progress*self.config.theme.icon_opacity)
                 painter.drawPixmap(x,y,pix_hover)
 
                 painter.setOpacity(self.config.theme.icon_opacity)
@@ -299,48 +327,44 @@ class TaskbarButton(QAbstractButton):
 
         return pixmap.scaled(rect.size(),Qt.KeepAspectRatio,Qt.SmoothTransformation)
 
-    def draw_indicator(self,painter: QPainter,rect: QRect):
+    def draw_indicator(self, painter: QPainter, rect: QRect):
         if not self.item.running:
             return
 
         reference_button_width = 48
 
-        def scale_width(value: int) -> int:
-            return max(1,round(rect.width()*value/reference_button_width))
+        def scale_width(value: float) -> int:
+            return max(1, round(rect.width()*value/reference_button_width))
 
-        def scale_offset(value: int) -> int:
-            return round(rect.width()*value/reference_button_width)
+        def lerp(a: float,b: float,t: float) -> float:
+            return a+(b-a)*t
 
-        indicator_h = max(1,round(rect.height()*2/30))
+        indicator_h = max(1, round(rect.height()*2/30))
         indicator_y = rect.height()-indicator_h
         center_x = rect.width()//2
 
         color = theme_color(self.config.theme.accent)
-        darker_color = "#"+"".join(
-            f"{max(0, int(int(self.config.theme.accent[i:i+2],16)*0.7)):02x}"
-            for i in (1,3,5)
-        )
 
+        darker_color = QColor(color)
+        darker_color = darker_color.darker(140)
+
+        t = self.indicator_hover_progress
         window_count = len(self.item.windows)
 
         if window_count <= 1:
-            if self.hovered:
-                indicator_w = scale_width(44)
-                painter.fillRect(center_x+scale_offset(-22),indicator_y,indicator_w,indicator_h,color)
-            else:
-                indicator_w = scale_width(36)
-                painter.fillRect(center_x+scale_offset(-18),indicator_y,indicator_w,indicator_h,color)
+            w = scale_width(lerp(36, 44, t))
+            x = center_x - w // 2
+            painter.fillRect(x, indicator_y, w, indicator_h, color)
         else:
-            if self.hovered:
-                main_w = scale_width(40)
-                secondary_w = scale_width(6)
-                painter.fillRect(center_x+scale_offset(-25),indicator_y,main_w,indicator_h,color)
-                painter.fillRect(center_x+scale_offset(16),indicator_y,secondary_w,indicator_h,darker_color)
-            else:
-                main_w = scale_width(25)
-                secondary_w = scale_width(12)
-                painter.fillRect(center_x+scale_offset(-19),indicator_y,main_w,indicator_h,color)
-                painter.fillRect(center_x+scale_offset(7),indicator_y,secondary_w,indicator_h,darker_color)
+            main_w = scale_width(lerp(25, 40, t))
+            gap = scale_width(1)
+            secondary_w = scale_width(lerp(12, 6, t))
+
+            total_w = main_w + gap + secondary_w
+            start_x = center_x - total_w // 2
+
+            painter.fillRect(start_x, indicator_y, main_w, indicator_h, color)
+            painter.fillRect(start_x + main_w + gap, indicator_y, secondary_w, indicator_h, darker_color)
 
 class ShowDesktopButton(QAbstractButton):
     def __init__(self,config: Config,parent=None):
