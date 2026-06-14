@@ -14,7 +14,7 @@
     "tray_icon_size": 16,
     "button_width": 36,
     "button_height": 30,
-    "button_style": "win8",
+    "button_style": "win10",
     "padding_x": 8,
     "padding_y": 4,
     "gap": 2,
