@@ -13,6 +13,7 @@ taskbarPlus is a very customizable taskbar replacement for Windows.
 - Task list with instant update
 - Multiple language support
 - Taskbar animations
+- Works with Open-Shell
 - And more!
 
 ## How to run
