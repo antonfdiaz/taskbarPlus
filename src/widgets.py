@@ -519,9 +519,13 @@ class TaskbarButton(QAbstractButton):
                 idx = 3 #sprite idx
                 sprite_rect = QRect(0,idx*40,60,40)
                 painter.drawPixmap(rect,self.button_spr,sprite_rect)
+                if self.item.active:
+                    rect = QRect(rect.x(),rect.y()+1,rect.width(),rect.height()-2)
+                    self.fill_rounded_rect(painter,rect,self.config.theme.active,3)
             else:
                 painter.fillRect(rect,active_bg)
-
+                if self.item.active:
+                    self.fill_rounded_rect(painter,rect,self.config.theme.active,3)
                 painter.setPen(QPen(border_color,1))
                 painter.drawRect(rect.adjusted(0,0,-0.5,-0.5))
 
@@ -546,9 +550,19 @@ class TaskbarButton(QAbstractButton):
                     painter.drawRect(rect.adjusted(0,0,-0.5,-0.5)) #border
             else:
                 #draw hot track effect
-                self.draw_hot_track(painter,rect)
-                
-    def draw_hot_track(self,painter: QPainter,rect: QRect):
+                self.draw_hot_track(painter,rect,3)
+
+    def fill_rounded_rect(self,painter: QPainter,rect: QRect,color,radius: float):
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(rect),radius,radius)
+
+        painter.save()
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QBrush(theme_color(color)))
+        painter.drawPath(path)
+        painter.restore()
+
+    def draw_hot_track(self,painter: QPainter,rect: QRect,clip_radius: float | None = None):
         mouse_x = self.mapFromGlobal(QCursor.pos()).x()
         mouse_y = self.mapFromGlobal(QCursor.pos()).y()
         radius = max(rect.width(),rect.height())*1.6
@@ -567,6 +581,11 @@ class TaskbarButton(QAbstractButton):
         gradient.setColorAt(1.0,edge)
 
         painter.save()
+        if clip_radius is not None:
+            rect = QRect(rect.x(),rect.y()+1,rect.width(),rect.height()-2)
+            clip_path = QPainterPath()
+            clip_path.addRoundedRect(QRectF(rect),clip_radius,clip_radius)
+            painter.setClipPath(clip_path)
         painter.setPen(Qt.NoPen)
         painter.setBrush(QBrush(gradient))
         painter.drawEllipse(QPointF(mouse_x,mouse_y),radius,radius)
