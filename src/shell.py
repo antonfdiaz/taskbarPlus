@@ -14,9 +14,9 @@ from ctypes import windll
 
 DWMWA_CLOAKED = 14
 START_MENU_PROCESS_NAMES = {
-    "StartMenuExperienceHost.exe",
-    "SearchApp.exe",
-    "StartMenu.exe" #open shell
+    "startmenuexperiencehost.exe",
+    "searchapp.exe",
+    "startmenu.exe" #open shell
 }
 START_MENU_TITLES = {"start","inicio","search","buscar"}
 TB_GETBUTTON = win32con.WM_USER + 23

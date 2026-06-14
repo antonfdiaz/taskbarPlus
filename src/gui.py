@@ -27,10 +27,12 @@ class MainWindow(QMainWindow):
         self.load_l18n()
         self.dynamic_app_order: list[str] = []
         self.apps_bars: list[TaskbarAppsBar] = []
+        self.start_buttons: list[TaskbarButton] = []
         self.tray_widgets: list[TrayWidget] = []
         self.tray_collapsed = False
         self.tray_items: list[TrayItem] = []
         self.apps_refresh_pending = False
+        self.start_menu_open = False
         self.config_reload_requested.connect(self.reload_from_disk)
 
         self.setup_window()
@@ -39,6 +41,10 @@ class MainWindow(QMainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.refresh_apps)
         self.timer.start(5000)
+
+        self.start_menu_timer = QTimer(self)
+        self.start_menu_timer.timeout.connect(self.refresh_start_button_state)
+        self.start_menu_timer.start(100)
 
         self.window_events = WindowEventWatcher(self)
         self.window_events.foregroundChanged.connect(self.refresh_active_window)
@@ -213,6 +219,7 @@ class MainWindow(QMainWindow):
     def rebuild_ui(self):
         self.load_l18n()
         self.apps_bars = []
+        self.start_buttons = []
         self.tray_widgets = []
         self.tray_items = []
 
@@ -284,6 +291,7 @@ class MainWindow(QMainWindow):
 
     def on_start_clicked(self):
         tap_key(win32con.VK_LWIN)
+        QTimer.singleShot(80,self.refresh_start_button_state)
     
     def on_search_clicked(self):
         if self.config.behavior.search.engine == "everything":
@@ -412,6 +420,9 @@ class MainWindow(QMainWindow):
         )
         button.setToolTip(title)
         button.clicked.connect(handler)
+        if item_id == "start":
+            self.start_buttons.append(button)
+            button.item.active = self.start_menu_open
         return button
 
     def load_button_pixmaps(self,path: str,item_id: str) -> list[QPixmap]:
@@ -710,6 +721,22 @@ class MainWindow(QMainWindow):
 
         for apps_bar in self.apps_bars:
             apps_bar.set_active_window(hwnd)
+
+        self.refresh_start_button_state()
+
+    def refresh_start_button_state(self):
+        if not self.start_buttons:
+            self.start_menu_open = False
+            return
+
+        menu_open = is_start_menu_open()
+        if menu_open == self.start_menu_open:
+            return
+
+        self.start_menu_open = menu_open
+        for button in self.start_buttons:
+            button.item.active = menu_open
+            button.update()
 
     def on_item_clicked(self,item: TaskbarItem,button: object):
         if button == "pin":

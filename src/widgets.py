@@ -454,7 +454,7 @@ class TaskbarButton(QAbstractButton):
 
         border_color = theme_color(self.config.theme.active).lighter(200)
 
-        is_open_app = window_count > 0
+        is_open_app = window_count > 0 or (self.item.id == "start" and self.item.active)
         is_active_state = is_open_app
 
         if is_active_state:
@@ -511,7 +511,7 @@ class TaskbarButton(QAbstractButton):
 
         border_color = theme_color(self.config.theme.active).lighter(200)
 
-        is_open_app = window_count > 0
+        is_open_app = window_count > 0 or (self.item.id == "start" and self.item.active)
         is_active_state = is_open_app
 
         if is_active_state:
