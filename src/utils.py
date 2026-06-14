@@ -1,4 +1,5 @@
-from PySide6.QtGui import QColor
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor,QPixmap
 from src.config import Config
 
 def theme_color_css(value,fallback="transparent"):
@@ -53,3 +54,30 @@ def menu_style(config: Config):
             background-color: {theme_color_css(theme.menu_separator_color)};
         }}
     """
+
+def pixmap_dominant_color(pixmap: QPixmap | None):
+    if pixmap is None or pixmap.isNull():
+        return "#00000000"
+
+    image = pixmap.scaled(24,24,Qt.KeepAspectRatio,Qt.SmoothTransformation).toImage()
+    colors: dict[tuple[int,int,int],int] = {}
+
+    for y in range(image.height()):
+        for x in range(image.width()):
+            color = image.pixelColor(x,y)
+            alpha = color.alpha()
+            if alpha < 32:
+                continue
+
+            key = (
+                color.red()//16*16,
+                color.green()//16*16,
+                color.blue()//16*16
+            )
+            colors[key] = colors.get(key,0)+alpha
+
+    if not colors:
+        return "#ffffff"
+
+    red,green,blue = max(colors,key=colors.get)
+    return QColor(red,green,blue).name()

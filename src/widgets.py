@@ -8,7 +8,7 @@ from src.l18n import L18n
 from src.shell import *
 from src.config import Config
 from src.models import *
-from src.utils import menu_style,theme_color
+from src.utils import menu_style,pixmap_dominant_color,theme_color
 from threading import Thread
 
 class TaskbarAppsBar(QWidget):
@@ -123,11 +123,23 @@ class TaskbarButton(QAbstractButton):
         self.icon_pixmap = item.icon_pixmap
         self.hover_icon_pixmap = item.hover_icon_pixmap
         self.active_icon_pixmap = item.active_icon_pixmap
+        self.dominant_hover_color = self.config.theme.hover
         self.hovered = False
         self.pressed = False
         self.bg_hover_progress = 0.0
         self.icon_hover_progress = 0.0
         self.indicator_hover_progress = 0.0
+
+        self.button_style = self.config.theme.button_style
+        self.button_spr = self.config.resolve_asset("assets/button_spr.png") #button spritesheet
+        self.button_spr = QPixmap(self.button_spr) if self.button_spr else None
+
+        if item.id != "start":
+            dominant_hover_color = pixmap_dominant_color(
+                self.icon.pixmap(self.config.theme.icon_size,self.config.theme.icon_size)
+            )
+            if dominant_hover_color != "#00000000":
+                self.dominant_hover_color = dominant_hover_color
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
@@ -267,6 +279,11 @@ class TaskbarButton(QAbstractButton):
         self.update()
         super().mouseReleaseEvent(event)
 
+    def mouseMoveEvent(self,event):
+        if self.button_style == "win8" and self.hovered:
+            self.update()
+        super().mouseMoveEvent(event)
+
     def paintEvent(self,event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -274,29 +291,10 @@ class TaskbarButton(QAbstractButton):
         try:
             rect = self.rect()
 
-            #define background color
-            base_bg = theme_color(self.config.theme.background)
-
-            hover_bg = theme_color(
-                self.config.theme.start_button_hover
-                if self.item.id == "start"
-                else self.config.theme.hover
-            )
-
-            active_bg = theme_color(
-                self.config.theme.start_button_active
-                if self.item.id == "start"
-                else self.config.theme.active
-            )
-
-            painter.fillRect(rect,base_bg)
-
-            if self.item.active or self.pressed:
-                painter.fillRect(rect,active_bg)
-            elif self.bg_hover_progress > 0.0:
-                hover = QColor(hover_bg)
-                hover.setAlphaF(hover.alphaF()*self.bg_hover_progress)
-                painter.fillRect(rect,hover)
+            if self.button_style == "win10":
+                self.draw_button_win10(painter,rect)
+            elif self.button_style == "win8":
+                self.draw_button_win8(painter,rect)
 
             #determine icon size
             if self.item.id == "start":
@@ -338,8 +336,6 @@ class TaskbarButton(QAbstractButton):
             else:
                 painter.setOpacity(self.config.theme.icon_opacity)
                 painter.drawPixmap(x,y,pix_default)
-
-            self.draw_indicator(painter,rect)
         finally:
             painter.end()
 
@@ -399,6 +395,115 @@ class TaskbarButton(QAbstractButton):
 
             painter.fillRect(start_x, indicator_y, main_w, indicator_h, color)
             painter.fillRect(start_x + main_w + gap, indicator_y, secondary_w, indicator_h, darker_color)
+
+    def draw_button_win10(self,painter: QPainter,rect: QRect):
+        #define background color
+        base_bg = theme_color(self.config.theme.background)
+
+        if self.item.id == "start" and not self.config.theme.start_button_fx:
+            painter.fillRect(rect,base_bg)
+            return
+
+        hover_bg = theme_color(
+            self.config.theme.start_button_hover
+            if self.item.id == "start"
+            else self.config.theme.hover
+        )
+
+        active_bg = theme_color(
+            self.config.theme.start_button_active
+            if self.item.id == "start"
+            else self.config.theme.active
+        )
+
+        painter.fillRect(rect,base_bg)
+
+        if self.item.active or self.pressed:
+            painter.fillRect(rect,active_bg)
+        elif self.bg_hover_progress > 0.0:
+            hover = QColor(hover_bg)
+            hover.setAlphaF(hover.alphaF()*self.bg_hover_progress)
+            painter.fillRect(rect,hover)
+
+        self.draw_indicator(painter,rect)
+
+    def draw_button_win8(self,painter: QPainter,rect: QRect):
+        #define background color
+        window_count = len(self.item.windows)
+
+        base_bg = theme_color(self.config.theme.background)
+
+        hover_bg = theme_color(
+            self.config.theme.start_button_hover
+            if self.item.id == "start"
+            else self.config.theme.hover
+        )
+
+        active_bg = theme_color(
+            self.config.theme.start_button_active
+            if self.item.id == "start"
+            else self.config.theme.active
+        )
+
+        painter.fillRect(rect,base_bg)
+
+        if self.item.id == "start" and not self.config.theme.start_button_fx:
+            return
+
+        border_color = theme_color(self.config.theme.active).lighter(200)
+
+        is_open_app = window_count > 0
+        is_active_state = is_open_app
+
+        if is_active_state:
+            painter.fillRect(rect,active_bg)
+
+            painter.setPen(QPen(border_color,1))
+            painter.drawRect(rect.adjusted(0,0,-0.5,-0.5))
+
+        if self.bg_hover_progress > 0.0:
+            if not is_open_app: #hovering and not opened
+                if self.button_spr and not self.button_spr.isNull():
+                    painter.save()
+                    if self.bg_hover_progress < 1.0:
+                        painter.setOpacity(self.bg_hover_progress)
+                    idx = 8 if not self.pressed else 9 #sprite idx
+                    sprite_rect = QRect(0,idx*40,60,40)
+                    painter.drawPixmap(rect,self.button_spr,sprite_rect)
+                    painter.restore()
+                else:
+                    hover = QColor(hover_bg)
+                    hover.setAlphaF(hover.alphaF()*self.bg_hover_progress)
+                    painter.fillRect(rect,hover)
+
+                    hover_border_color = QColor(border_color)
+                    hover_border_color.setAlphaF(hover_border_color.alphaF()*self.bg_hover_progress)
+                    painter.setPen(QPen(hover_border_color,1))
+                    painter.drawRect(rect.adjusted(0,0,-0.5,-0.5)) #border
+            else:
+                #draw hot track effect
+                mouse_x = self.mapFromGlobal(QCursor.pos()).x()
+                mouse_y = self.mapFromGlobal(QCursor.pos()).y()
+                radius = max(rect.width(),rect.height())*1.6
+                hot_track_color = QColor(self.dominant_hover_color).lighter(180)
+
+                center = QColor(hot_track_color)
+                center.setAlphaF(min(1.0,0.75*self.bg_hover_progress))
+                middle = QColor(hot_track_color)
+                middle.setAlphaF(min(1.0,0.28*self.bg_hover_progress))
+                edge = QColor(hot_track_color)
+                edge.setAlpha(0)
+
+                gradient = QRadialGradient(QPointF(mouse_x,mouse_y),radius)
+                gradient.setColorAt(0.0,center)
+                gradient.setColorAt(0.35,middle)
+                gradient.setColorAt(1.0,edge)
+
+                painter.save()
+                painter.setPen(Qt.NoPen)
+                painter.setBrush(QBrush(gradient))
+                painter.drawEllipse(QPointF(mouse_x,mouse_y),radius,radius)
+                painter.restore()
 
 class ShowDesktopButton(QAbstractButton):
     def __init__(self,config: Config,parent=None):

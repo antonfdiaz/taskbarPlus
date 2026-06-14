@@ -28,6 +28,7 @@ class ThemeConfig:
     tray_icon_size: int
     button_width: int
     button_height: int
+    button_style: str
     padding_x: int
     padding_y: int
     gap: int
@@ -35,6 +36,7 @@ class ThemeConfig:
     start_icon_transition: dict
     start_icon: str
     start_icon_size: int
+    start_button_fx: bool
     start_button_width: int
     start_button_height: int
     start_button_hover: str
