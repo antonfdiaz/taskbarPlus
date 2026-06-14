@@ -1,5 +1,6 @@
 import os
 import ctypes
+import time
 from ctypes import wintypes
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
@@ -12,6 +13,12 @@ import psutil
 from ctypes import windll
 
 DWMWA_CLOAKED = 14
+START_MENU_PROCESS_NAMES = {
+    "startmenuexperiencehost.exe",
+    "searchapp.exe",
+    "searchhost.exe",
+}
+START_MENU_TITLES = {"start","inicio","search","buscar"}
 TB_GETBUTTON = win32con.WM_USER + 23
 TB_BUTTONCOUNT = win32con.WM_USER + 24
 TB_GETBUTTONTEXTW = win32con.WM_USER + 75
@@ -86,7 +93,7 @@ def _is_cloaked(hwnd):
     )
     return result == 0 and bool(cloaked.value)
 
-def _should_include_window(hwnd,title,exe):
+def should_include_window(hwnd,title,exe):
     if not title or not win32gui.IsWindowVisible(hwnd) or _is_cloaked(hwnd):
         return False
 
@@ -155,7 +162,7 @@ def list_open_windows():
         except (psutil.NoSuchProcess,psutil.AccessDenied,psutil.ZombieProcess):
             return
 
-        if not _should_include_window(hwnd,title,exe):
+        if not should_include_window(hwnd,title,exe):
             return
 
         key = (exe.lower(),hwnd)
@@ -212,7 +219,7 @@ def _append_unique_hwnds(target,items):
         if item and item not in target:
             target.append(item)
 
-def _get_tray_toolbars():
+def get_tray_toolbars():
     toolbars = []
 
     tray = win32gui.FindWindow("Shell_TrayWnd",None)
@@ -277,7 +284,7 @@ def _read_tray_tooltip(process,toolbar_hwnd,button):
     finally:
         _kernel32.VirtualFreeEx(process,remote_text,0,MEM_RELEASE)
 
-def _list_tray_toolbar_icons(toolbar_hwnd):
+def list_tray_toolbar_icons(toolbar_hwnd):
     _,pid = win32process.GetWindowThreadProcessId(toolbar_hwnd)
     access = PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_READ
     process = _kernel32.OpenProcess(access,False,pid)
@@ -321,8 +328,8 @@ def list_tray_icons():
     items = []
     seen = set()
 
-    for toolbar in _get_tray_toolbars():
-        for item in _list_tray_toolbar_icons(toolbar):
+    for toolbar in get_tray_toolbars():
+        for item in list_tray_toolbar_icons(toolbar):
             key = (item["hwnd"],item["uid"],item["callback_message"])
             if key in seen:
                 continue
@@ -396,3 +403,44 @@ def launch_windows_app(target: str):
     result = windll.shell32.ShellExecuteW(None,"open",target,None,None,win32con.SW_SHOWNORMAL)
     if result <= 32:
         raise OSError(f"ShellExecuteW failed for {target!r} with code {result}")
+
+def get_window_process_name(hwnd):
+    if not hwnd:
+        return ""
+
+    try:
+        _,pid = win32process.GetWindowThreadProcessId(hwnd)
+        return os.path.basename(psutil.Process(pid).name()).lower()
+    except (psutil.NoSuchProcess,psutil.AccessDenied,psutil.ZombieProcess,win32gui.error):
+        return ""
+
+def get_foreground_window_title():
+    hwnd = win32gui.GetForegroundWindow()
+    return win32gui.GetWindowText(hwnd).strip() if hwnd else ""
+
+def get_foreground_window_info():
+    hwnd = win32gui.GetForegroundWindow()
+    if not hwnd:
+        return {"hwnd": 0,"title": "","class_name": "","process": ""}
+
+    return {
+        "hwnd": hwnd,
+        "title": win32gui.GetWindowText(hwnd).strip(),
+        "class_name": win32gui.GetClassName(hwnd),
+        "process": get_window_process_name(hwnd),
+    }
+
+def is_start_menu_open():
+    hwnd = win32gui.GetForegroundWindow()
+    if not hwnd:
+        return False
+
+    process_name = get_window_process_name(hwnd)
+    title = win32gui.GetWindowText(hwnd).strip().lower()
+
+    return process_name in START_MENU_PROCESS_NAMES or title in START_MENU_TITLES
+
+if __name__ == "__main__":
+    time.sleep(2)
+    print(get_foreground_window_info())
+    print(is_start_menu_open())
