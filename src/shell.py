@@ -14,9 +14,9 @@ from ctypes import windll
 
 DWMWA_CLOAKED = 14
 START_MENU_PROCESS_NAMES = {
-    "startmenuexperiencehost.exe",
-    "searchapp.exe",
-    "searchhost.exe",
+    "StartMenuExperienceHost.exe",
+    "SearchApp.exe",
+    "StartMenu.exe" #open shell
 }
 START_MENU_TITLES = {"start","inicio","search","buscar"}
 TB_GETBUTTON = win32con.WM_USER + 23
@@ -439,8 +439,3 @@ def is_start_menu_open():
     title = win32gui.GetWindowText(hwnd).strip().lower()
 
     return process_name in START_MENU_PROCESS_NAMES or title in START_MENU_TITLES
-
-if __name__ == "__main__":
-    time.sleep(2)
-    print(get_foreground_window_info())
-    print(is_start_menu_open())

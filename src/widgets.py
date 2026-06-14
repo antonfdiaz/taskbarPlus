@@ -335,7 +335,7 @@ class TaskbarButton(QAbstractButton):
                 painter.drawPixmap(x,y,pix_hover)
 
                 painter.setOpacity(self.config.theme.icon_opacity)
-            else:
+            elif not self.pressed and not self.item.active:
                 painter.setOpacity(self.config.theme.icon_opacity)
                 painter.drawPixmap(x,y,pix_default)
         finally:
