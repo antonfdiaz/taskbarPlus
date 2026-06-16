@@ -1,7 +1,6 @@
 import os
 import ctypes
-import time
-from ctypes import wintypes
+from ctypes import wintypes,WinDLL,byref,c_ulong
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
@@ -29,6 +28,8 @@ PROCESS_QUERY_INFORMATION = 0x0400
 MEM_COMMIT = 0x1000
 MEM_RELEASE = 0x8000
 PAGE_READWRITE = 0x04
+
+REAL_WINDOWS_VERSION = None
 
 _dwmapi = getattr(ctypes.windll,"dwmapi",None)
 _user32 = ctypes.windll.user32
@@ -450,3 +451,24 @@ def is_start_menu_open():
     title = win32gui.GetWindowText(hwnd).strip().lower()
 
     return process_name in START_MENU_PROCESS_NAMES or title in START_MENU_TITLES
+
+def get_real_winver(): #get real windows version
+    global REAL_WINDOWS_VERSION
+    if REAL_WINDOWS_VERSION is not None:
+        return REAL_WINDOWS_VERSION
+
+    ntdll = WinDLL("ntdll.dll")
+
+    major = c_ulong()
+    minor = c_ulong()
+    build = c_ulong()
+
+    ntdll.RtlGetNtVersionNumbers(byref(major),byref(minor),byref(build))
+
+    version = (major.value,minor.value,build.value & 0xFFFF)
+    REAL_WINDOWS_VERSION = version
+    return version
+
+def is_windows_7():
+    major,minor,_ = get_real_winver()
+    return major == 6 and minor == 1
