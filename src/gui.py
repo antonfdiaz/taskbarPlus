@@ -32,7 +32,10 @@ class TaskbarRootWidget(QWidget):
         painter = QPainter(self)
 
         try:
-            painter.fillRect(self.rect(),theme_color(self.config.theme.background))
+            background = theme_color(self.config.theme.background)
+            if background.alpha() == 0:
+                background.setAlpha(1)
+            painter.fillRect(self.rect(),background)
 
             if self.texture.isNull():
                 return
