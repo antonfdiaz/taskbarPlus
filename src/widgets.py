@@ -566,8 +566,8 @@ class TaskbarButton(QAbstractButton):
 
     def draw_hot_track(self,painter: QPainter,rect: QRect,clip_radius: float | None = None):
         mouse_x = self.mapFromGlobal(QCursor.pos()).x()
-        mouse_y = self.mapFromGlobal(QCursor.pos()).y()
-        radius = max(rect.width(),rect.height())*1.6
+        y = rect.height()
+        radius = max(rect.width(),rect.height())*1.75
         hot_track_color = QColor(self.dominant_hover_color).lighter(180)
 
         center = QColor(hot_track_color)
@@ -577,7 +577,7 @@ class TaskbarButton(QAbstractButton):
         edge = QColor(hot_track_color)
         edge.setAlpha(0)
 
-        gradient = QRadialGradient(QPointF(mouse_x,mouse_y),radius)
+        gradient = QRadialGradient(QPointF(mouse_x,y),radius)
         gradient.setColorAt(0.0,center)
         gradient.setColorAt(0.35,middle)
         gradient.setColorAt(1.0,edge)
@@ -590,7 +590,7 @@ class TaskbarButton(QAbstractButton):
             painter.setClipPath(clip_path)
         painter.setPen(Qt.NoPen)
         painter.setBrush(QBrush(gradient))
-        painter.drawEllipse(QPointF(mouse_x,mouse_y),radius,radius)
+        painter.drawEllipse(QPointF(mouse_x,y),radius,radius)
         painter.restore()
 
 class ShowDesktopButton(QAbstractButton):
