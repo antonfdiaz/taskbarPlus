@@ -198,20 +198,21 @@ class TaskbarButton(QAbstractButton):
         return self.l18n.tr(key)
 
     def show_context_menu(self,pos):
-        menu = QMenu(self)
-        menu.setStyleSheet(menu_style(self.config))
-        if self.item.windows:
-            for window in self.item.windows:
-                action = menu.addAction(window.title)
-                action.triggered.connect(lambda checked=False,hwnd=window.hwnd: self.itemAction.emit(self.item,hwnd))
-            menu.addSeparator()
-        new_win_action = menu.addAction(self.tr("taskbar.menu.new_win"))
-        new_win_action.setIcon(QIcon(self.config.resolve_asset("assets/add.png")).pixmap(15,15))
-        new_win_action.triggered.connect(lambda: launch_windows_app(self.item.launch_path) if self.item.launch_path else None)
-        pin_action = menu.addAction(self.tr("taskbar.menu.unpin" if self.item.pinned else "taskbar.menu.pin"))
-        pin_action.setIcon(QIcon(self.config.resolve_asset("assets/pin.png")) if not self.item.pinned else QIcon(self.config.resolve_asset("assets/unpin.png")))
-        pin_action.triggered.connect(lambda: self.itemAction.emit(self.item,"pin"))
-        menu.exec(self.mapToGlobal(pos))
+        if self.item.id not in ("start","search","task_view"):
+            menu = QMenu(self)
+            menu.setStyleSheet(menu_style(self.config))
+            if self.item.windows:
+                for window in self.item.windows:
+                    action = menu.addAction(window.title)
+                    action.triggered.connect(lambda checked=False,hwnd=window.hwnd: self.itemAction.emit(self.item,hwnd))
+                menu.addSeparator()
+            new_win_action = menu.addAction(self.tr("taskbar.menu.new_win"))
+            new_win_action.setIcon(QIcon(self.config.resolve_asset("assets/add.png")).pixmap(15,15))
+            new_win_action.triggered.connect(lambda: launch_windows_app(self.item.launch_path) if self.item.launch_path else None)
+            pin_action = menu.addAction(self.tr("taskbar.menu.unpin" if self.item.pinned else "taskbar.menu.pin"))
+            pin_action.setIcon(QIcon(self.config.resolve_asset("assets/pin.png")) if not self.item.pinned else QIcon(self.config.resolve_asset("assets/unpin.png")))
+            pin_action.triggered.connect(lambda: self.itemAction.emit(self.item,"pin"))
+            menu.exec(self.mapToGlobal(pos))
 
     def get_bg_hover_progress(self):
         return self.bg_hover_progress
