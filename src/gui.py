@@ -11,12 +11,54 @@ from src.models import *
 from src.widgets import *
 from src.shell import *
 from src.blur import apply_acrylic
-from src.utils import theme_color_css,menu_style
+from src.utils import theme_color_css,menu_style,theme_color
 from src.win_observer import WindowEventWatcher
 import subprocess
 import win32gui
 import win32con
 import os
+
+class TaskbarRootWidget(QWidget):
+    def __init__(self,config: Config,parent=None):
+        super().__init__(parent)
+        self.config = config
+        self.texture = QPixmap()
+
+        texture_path = self.config.resolve_asset(self.config.theme.taskbar_texture)
+        if texture_path:
+            self.texture = QPixmap(texture_path)
+
+    def paintEvent(self,event):
+        painter = QPainter(self)
+
+        try:
+            painter.fillRect(self.rect(),theme_color(self.config.theme.background))
+
+            if self.texture.isNull():
+                return
+
+            opacity = max(0.0,min(1.0,float(self.config.theme.taskbar_texture_opacity)))
+            if opacity <= 0.0:
+                return
+
+            painter.save()
+            painter.setOpacity(opacity)
+
+            if self.config.theme.taskbar_texture_mode == "tile":
+                painter.drawTiledPixmap(self.rect(),self.texture)
+            else:
+                painter.drawPixmap(
+                    self.rect(),
+                    self.texture.scaled(
+                        self.size(),
+                        Qt.IgnoreAspectRatio,
+                        Qt.SmoothTransformation
+                    )
+                )
+
+            painter.restore()
+        finally:
+            painter.end()
 
 class MainWindow(QMainWindow):
     config_reload_requested = Signal()
@@ -235,25 +277,13 @@ class MainWindow(QMainWindow):
 
         self.rebuild_context_menu()
 
-        central_widget = QWidget()
+        central_widget = TaskbarRootWidget(self.config)
         central_widget.setObjectName("taskbarRoot")
         self.setCentralWidget(central_widget)
 
-        texture_rule = ""
-        if self.config.theme.taskbar_texture:
-            texture_path = self.config.resolve_asset(self.config.theme.taskbar_texture)
-            if texture_path:
-                texture_path = texture_path.replace("\\","/")
-            if self.config.theme.taskbar_texture_mode == "stretch":
-                texture_rule = f'border-image: url("{texture_path}") 0 0 0 0 stretch stretch;'
-            elif self.config.theme.taskbar_texture_mode == "tile":
-                texture_rule = f'background-image: url("{texture_path}"); background-repeat: repeat-xy;'
-
         central_widget.setStyleSheet(f"""
             QWidget#taskbarRoot {{
-                background-color: {theme_color_css(self.config.theme.background)};
                 color: {theme_color_css(self.config.theme.foreground)};
-                {texture_rule}
             }}
         """)
 

@@ -1,7 +1,8 @@
 {
     "taskbar_height": 40,
     "taskbar_texture": "assets/taskbar.png",
-    "taskbar_texture_mode": "tile",
+    "taskbar_texture_mode": "stretch",
+    "taskbar_texture_opacity": 0.6,
     "taskbar_blur": true,
     "taskbar_blur_tint": "#44202020",
     "background": "#00000000",
