@@ -308,6 +308,9 @@ class TaskbarButton(QAbstractButton):
                 self.draw_button_win8(painter,rect)
             elif self.button_style == "win7":
                 self.draw_button_win7(painter,rect)
+            else:
+                print(f"unknown button style: {self.button_style}. falling back to win10 style.")
+                self.draw_button_win10(painter,rect)
 
             #determine icon size
             if self.item.id == "start":
