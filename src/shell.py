@@ -401,12 +401,14 @@ def show_taskbar():
 
 #these 2 are only for windows 7
 def hide_start_btn():
+    user32 = ctypes.WinDLL("user32")
     START_ATOM = wintypes.LPCWSTR(0xC017)
-    win32gui.ShowWindow(win32gui.FindWindow(START_ATOM,None),win32con.SW_HIDE)
+    win32gui.ShowWindow(user32.FindWindowW(START_ATOM,None),win32con.SW_HIDE)
 
 def show_start_btn():
+    user32 = ctypes.WinDLL("user32")
     START_ATOM = wintypes.LPCWSTR(0xC017)
-    win32gui.ShowWindow(win32gui.FindWindow(START_ATOM,None),win32con.SW_SHOW)
+    win32gui.ShowWindow(user32.FindWindowW(START_ATOM,None),win32con.SW_SHOW)
 
 def launch_windows_app(target: str):
     result = windll.shell32.ShellExecuteW(None,"open",target,None,None,win32con.SW_SHOWNORMAL)
