@@ -399,6 +399,15 @@ def hide_taskbar():
 def show_taskbar():
     win32gui.ShowWindow(win32gui.FindWindow("Shell_TrayWnd",None),win32con.SW_SHOW)
 
+#these 2 are only for windows 7
+def hide_start_btn():
+    START_ATOM = wintypes.LPCWSTR(0xC017)
+    win32gui.ShowWindow(win32gui.FindWindow(START_ATOM,None),win32con.SW_HIDE)
+
+def show_start_btn():
+    START_ATOM = wintypes.LPCWSTR(0xC017)
+    win32gui.ShowWindow(win32gui.FindWindow(START_ATOM,None),win32con.SW_SHOW)
+
 def launch_windows_app(target: str):
     result = windll.shell32.ShellExecuteW(None,"open",target,None,None,win32con.SW_SHOWNORMAL)
     if result <= 32:
