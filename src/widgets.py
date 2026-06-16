@@ -111,6 +111,7 @@ class ClockWidget(QLabel):
 
 class TaskbarButton(QAbstractButton):
     itemAction = Signal(object,object)
+    button_spr_cache: dict[str,QPixmap] = {}
 
     def __init__(self,item: TaskbarItem,config: Config,l18n: L18n,parent=None):
         super().__init__(parent)
@@ -131,8 +132,7 @@ class TaskbarButton(QAbstractButton):
         self.indicator_hover_progress = 0.0
 
         self.button_style = self.config.theme.button_style
-        self.button_spr = self.config.resolve_asset("assets/button_spr.png") #button spritesheet
-        self.button_spr = QPixmap(self.button_spr) if self.button_spr else None
+        self.button_spr = self.load_button_sprite()
 
         if item.id != "start":
             dominant_hover_color = pixmap_dominant_color(
@@ -182,6 +182,17 @@ class TaskbarButton(QAbstractButton):
                 self.config.theme.button_width,
                 self.config.theme.button_height
             )
+
+    def load_button_sprite(self) -> QPixmap:
+        cache_key = str(self.config.active_skin_dir)
+        cached = self.button_spr_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        path = self.config.resolve_asset("assets/button_spr.png")
+        pixmap = QPixmap(path) if path else QPixmap()
+        self.button_spr_cache[cache_key] = pixmap
+        return pixmap
 
     def tr(self,key):
         return self.l18n.tr(key)
