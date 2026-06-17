@@ -3,7 +3,7 @@
         "time_format": "hh:mm:ss",
         "date_format": "dd/MM/yyyy",
         "show_time": true,
-        "show_date": false
+        "show_date": true
     },
     "search": {
         "mode": "box",
