@@ -3,7 +3,7 @@ from dataclasses import asdict,dataclass,field
 from pathlib import Path
 import sys
 
-APP_VERSION = "0.7.2"
+APP_VERSION = "0.7.3"
 
 @dataclass
 class LayoutConfig:
