@@ -6,5 +6,9 @@
         "task_view",
         "apps"
     ],
-    "right": ["tray","clock","show_desktop"]
+    "right": [
+        "tray",
+        "clock",
+        "show_desktop"
+    ]
 }
