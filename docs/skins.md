@@ -43,6 +43,8 @@ If you want to make a custom look for your taskbar, this is the most important f
 
 - `taskbar_texture_mode`: How the taskbar texture is drawn. It can be `stretch` or `tile`.
 
+- `taskbar_texture_opacity`: The opacity of the taskbar texture. Its value can be between 0.0 and 1.0.
+
 - `taskbar_blur`: Enables Windows acrylic/DWM blur on the taskbar. Use `true` to enable it or `false` to disable it.
 
 - `taskbar_blur_tint`: Tint color applied to the taskbar blur. This uses an ARGB-style hex value in the form `#AARRGGBB`, where the first two digits are the alpha channel. Example: `#cc202020`. Lower alpha values make the taskbar more transparent.
@@ -55,17 +57,19 @@ If you want to make a custom look for your taskbar, this is the most important f
 
 ### Buttons
 
-- `hover`: Default button background color used when a normal taskbar button is hovered.
+- `hover`: Default button background color used when a taskbar button is hovered.
 
-- `active`: Default button background color used when a normal taskbar button is pressed or active.
+- `active`: Default button background color used when a taskbar button is pressed or active.
 
-- `icon_size`: Default icon size in pixels for normal taskbar app buttons.
+- `icon_size`: Default icon size in pixels for taskbar app buttons.
 
 - `icon_opacity`: Opacity of button icons. Use values between `0.0` and `1.0`.
 
-- `button_width`: Default width in pixels for normal taskbar buttons.
+- `button_width`: Default width in pixels for taskbar buttons.
 
-- `button_height`: Default height in pixels for normal taskbar buttons.
+- `button_height`: Default height in pixels for taskbar buttons.
+
+- `button_style`: The style in which taskbar buttons will be drawn. It can be `win10`, `win8` or `win7`.
 
 - `padding_x`: Horizontal internal padding used by several widgets.
 
@@ -88,6 +92,8 @@ If you want to make a custom look for your taskbar, this is the most important f
 - `start_icon`: Path to the Start button icon image.
 
 - `start_icon_size`: Size in pixels for the Start button icon.
+
+- `start_button_fx`: Whether or not to apply hover and active effects to the Start button.
 
 - `start_button_width`: Width in pixels of the Start button.
 
