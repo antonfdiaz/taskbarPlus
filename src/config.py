@@ -224,3 +224,54 @@ class Config:
         if not filename:
             return None
         return self.resolve_asset(f"assets/{filename}")
+
+    def change_setting(self,section: str,*keys: str) -> bool:
+        if not keys:
+            return False
+
+        target = getattr(self,section,None)
+        if target is None:
+            return False
+
+        for key in keys[:-1]:
+            target = getattr(target,key,None)
+            if target is None:
+                return False
+
+        key = keys[-1]
+        if not hasattr(target,key):
+            return False
+
+        current_value = getattr(target,key)
+
+        if isinstance(current_value,bool):
+            #toggle bool value
+            setattr(target,key,not current_value)
+            self.save(section)
+            return True
+
+        if isinstance(current_value,(str,int,float)):
+            from PySide6.QtWidgets import QInputDialog
+
+            value_text,accepted = QInputDialog.getText(
+                None,"taskbarPlus",".".join((section,*keys)),
+                text=str(current_value)
+            )
+            if not accepted:
+                return False
+
+            try:
+                if isinstance(current_value,int):
+                    new_value = int(value_text)
+                elif isinstance(current_value,float):
+                    new_value = float(value_text)
+                else:
+                    new_value = value_text
+            except ValueError:
+                return False
+
+            setattr(target,key,new_value)
+            self.save(section)
+            return True
+
+        return False

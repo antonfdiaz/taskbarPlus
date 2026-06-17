@@ -142,6 +142,8 @@ class MainWindow(QMainWindow):
         self.menu.addMenu(self.skins_menu)
         self.lang_menu = self.create_lang_menu()
         self.menu.addMenu(self.lang_menu)
+        self.behavior_menu = self.create_behavior_menu()
+        self.menu.addMenu(self.behavior_menu)
         self.menu.addAction(self.tr("taskbar.menu.about"),self.show_about_dialog).setIcon(QIcon(self.config.resolve_asset("assets/info.png")).pixmap(16,16))
         self.menu.addAction(self.tr("taskbar.menu.refresh"),self.rebuild_ui).setIcon(QIcon(self.config.resolve_asset("assets/refresh.png")).pixmap(16,16))
         self.menu.addAction(self.tr("taskbar.menu.exit"),self.close).setIcon(QIcon(self.config.resolve_asset("assets/close.png")).pixmap(16,16))
@@ -154,6 +156,79 @@ class MainWindow(QMainWindow):
         msg.setText(f"taskbarPlus {self.config.version}")
         msg.setInformativeText(self.tr("taskbar.about.description"))
         msg.exec()
+
+    def create_behavior_menu(self) -> QMenu:
+        self.behavior_menu = QMenu(self.tr("taskbar.menu.behavior"),self)
+        self.behavior_menu.setStyleSheet(menu_style(self.config))
+        self.behavior_menu.setIcon(QIcon(self.config.resolve_asset("assets/setting.png")).pixmap(16,16))
+
+        self.clock_behavior_menu = QMenu(self.tr("taskbar.menu.behavior.clock"),self.behavior_menu)
+        self.clock_behavior_menu.setStyleSheet(menu_style(self.config))
+        self.clock_behavior_menu.setToolTipsVisible(True)
+
+        time_format_action = self.clock_behavior_menu.addAction(
+            self.tr("taskbar.menu.behavior.clock.time_format"),
+            lambda: self.change_setting("behavior","clock","time_format")
+        )
+        time_format_action.setToolTip(self.config.behavior.clock.time_format)
+
+        date_format_action = self.clock_behavior_menu.addAction(
+            self.tr("taskbar.menu.behavior.clock.date_format"),
+            lambda: self.change_setting("behavior","clock","date_format")
+        )
+        date_format_action.setToolTip(self.config.behavior.clock.date_format)
+
+        show_time_action = self.clock_behavior_menu.addAction(
+            self.tr("taskbar.menu.behavior.clock.show_time"),
+            lambda: self.change_setting("behavior","clock","show_time")
+        )
+        show_time_action.setCheckable(True)
+        show_time_action.setChecked(self.config.behavior.clock.show_time)
+
+        show_date_action = self.clock_behavior_menu.addAction(
+            self.tr("taskbar.menu.behavior.clock.show_date"),
+            lambda: self.change_setting("behavior","clock","show_date")
+        )
+        show_date_action.setCheckable(True)
+        show_date_action.setChecked(self.config.behavior.clock.show_date)
+
+        self.behavior_menu.addMenu(self.clock_behavior_menu)
+
+        self.search_behavior_menu = QMenu(self.tr("taskbar.menu.behavior.search"),self.behavior_menu)
+        self.search_behavior_menu.setStyleSheet(menu_style(self.config))
+        self.search_behavior_menu.setToolTipsVisible(True)
+
+        search_mode_action = self.search_behavior_menu.addAction(
+            self.tr("taskbar.menu.behavior.search.mode"),
+            lambda: self.change_setting("behavior","search","mode")
+        )
+        search_mode_action.setToolTip(self.config.behavior.search.mode)
+
+        search_engine_action = self.search_behavior_menu.addAction(
+            self.tr("taskbar.menu.behavior.search.engine"),
+            lambda: self.change_setting("behavior","search","engine")
+        )
+        search_engine_action.setToolTip(self.config.behavior.search.engine)
+
+        box_clear_button_action = self.search_behavior_menu.addAction(
+            self.tr("taskbar.menu.behavior.search.box_clear_button"),
+            lambda: self.change_setting("behavior","search","box_clear_button")
+        )
+        box_clear_button_action.setCheckable(True)
+        box_clear_button_action.setChecked(self.config.behavior.search.box_clear_button)
+
+        everything_path_action = self.search_behavior_menu.addAction(
+            self.tr("taskbar.menu.behavior.search.everything_path"),
+            lambda: self.change_setting("behavior","search","everything_path")
+        )
+        everything_path_action.setToolTip(self.config.behavior.search.everything_path)
+
+        self.behavior_menu.addMenu(self.search_behavior_menu)
+        return self.behavior_menu
+
+    def change_setting(self,section: str,*keys: str):
+        if self.config.change_setting(section,*keys):
+            QTimer.singleShot(100,self.reload_from_disk)
 
     def create_lang_menu(self) -> QMenu:
         self.locale_lang = {
