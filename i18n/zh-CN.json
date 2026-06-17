@@ -7,6 +7,7 @@
 	"taskbar.menu.behavior.clock.date_format": "日期格式",
 	"taskbar.menu.behavior.clock.show_time": "显示时间",
 	"taskbar.menu.behavior.clock.show_date": "显示日期",
+	"taskbar.menu.behavior.clock.font_size": "字体大小",
 	"taskbar.menu.behavior.search": "搜索",
 	"taskbar.menu.behavior.search.mode": "模式",
 	"taskbar.menu.behavior.search.engine": "引擎",

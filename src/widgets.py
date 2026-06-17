@@ -93,6 +93,7 @@ class ClockWidget(QLabel):
         self.setStyleSheet(f"""
             color: {self.config.theme.foreground};
             padding: {self.config.theme.padding_y}px {self.config.theme.padding_x}px;
+            font-size: {self.config.behavior.clock.font_size};
         """)
         self.update_time()
 

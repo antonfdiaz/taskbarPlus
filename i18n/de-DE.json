@@ -7,6 +7,7 @@
 	"taskbar.menu.behavior.clock.date_format": "Datumsformat",
 	"taskbar.menu.behavior.clock.show_time": "Uhrzeit anzeigen",
 	"taskbar.menu.behavior.clock.show_date": "Datum anzeigen",
+	"taskbar.menu.behavior.clock.font_size": "Schriftgröße",
 	"taskbar.menu.behavior.search": "Suche",
 	"taskbar.menu.behavior.search.mode": "Modus",
 	"taskbar.menu.behavior.search.engine": "Suchmaschine",

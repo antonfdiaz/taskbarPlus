@@ -192,6 +192,12 @@ class MainWindow(QMainWindow):
         show_date_action.setCheckable(True)
         show_date_action.setChecked(self.config.behavior.clock.show_date)
 
+        font_size_action = self.clock_behavior_menu.addAction(
+            self.tr("taskbar.menu.behavior.clock.font_size"),
+            lambda: self.change_setting("behavior","clock","font_size")
+        )
+        font_size_action.setToolTip(self.config.behavior.clock.font_size)
+
         self.behavior_menu.addMenu(self.clock_behavior_menu)
 
         self.search_behavior_menu = QMenu(self.tr("taskbar.menu.behavior.search"),self.behavior_menu)

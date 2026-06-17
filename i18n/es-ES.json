@@ -7,6 +7,7 @@
 	"taskbar.menu.behavior.clock.date_format": "Formato de fecha",
 	"taskbar.menu.behavior.clock.show_time": "Mostrar hora",
 	"taskbar.menu.behavior.clock.show_date": "Mostrar fecha",
+	"taskbar.menu.behavior.clock.font_size": "Tamaño de fuente",
 	"taskbar.menu.behavior.search": "Búsqueda",
 	"taskbar.menu.behavior.search.mode": "Modo",
 	"taskbar.menu.behavior.search.engine": "Motor",

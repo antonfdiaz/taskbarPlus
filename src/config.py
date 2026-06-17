@@ -72,6 +72,7 @@ class ClockBehaviorConfig:
     date_format: str = "dd/MM/yyyy"
     show_time: bool = True
     show_date: bool = False
+    font_size: str = "12px"
 
 @dataclass
 class SearchBehaviorConfig:

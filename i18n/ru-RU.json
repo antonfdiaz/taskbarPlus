@@ -7,6 +7,7 @@
 	"taskbar.menu.behavior.clock.date_format": "Формат даты",
 	"taskbar.menu.behavior.clock.show_time": "Показывать время",
 	"taskbar.menu.behavior.clock.show_date": "Показывать дату",
+	"taskbar.menu.behavior.clock.font_size": "Размер шрифта",
 	"taskbar.menu.behavior.search": "Поиск",
 	"taskbar.menu.behavior.search.mode": "Режим",
 	"taskbar.menu.behavior.search.engine": "Движок",
