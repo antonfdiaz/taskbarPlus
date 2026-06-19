@@ -50,8 +50,10 @@ Skins are located at `taskbarPlus/config/skins`. You can create your own skins b
 Normally it is easier to start by copying an existing skin and modifying it to suit your needs.  
 You can view documentation about skins [here](https://github.com/antonfdiaz/taskbarPlus/blob/main/docs/skins.md). 
 
-taskbarPlus comes with 3 default skins:
+taskbarPlus comes with 5 default skins:
 
 - `default` is the Windows 10 style skin.
+- `default-sb` is the superbar variant of `default`.
 - `centered` is a centered taskbar style, like in Windows 11.
+- `centered-sb` is the superbar variant of `centered`.
 - `aero` is a Windows 7 style skin.
