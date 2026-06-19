@@ -167,6 +167,9 @@ class TaskbarButton(QAbstractButton):
         self.indicator_anim.setDuration(150)
         self.indicator_anim.setEasingCurve(QEasingCurve.OutCubic)
 
+        self.combined = False
+        self.uncombined_width = 200
+
         self.setMouseTracking(True)
         if item.id == "start":
             self.setFixedSize(
@@ -185,7 +188,7 @@ class TaskbarButton(QAbstractButton):
             )
         else:
             self.setFixedSize(
-                self.config.theme.button_width,
+                self.button_width(),
                 self.config.theme.button_height
             )
 
@@ -207,7 +210,7 @@ class TaskbarButton(QAbstractButton):
         if self.item.id not in ("start","search","task_view"):
             menu = QMenu(self)
             menu.setStyleSheet(menu_style(self.config))
-            if self.item.windows:
+            if self.item.windows: #has any windows
                 for window in self.item.windows:
                     action = menu.addAction(window.title)
                     action.triggered.connect(lambda checked=False,hwnd=window.hwnd: self.itemAction.emit(self.item,hwnd))
@@ -319,6 +322,8 @@ class TaskbarButton(QAbstractButton):
                 print(f"unknown button style: {self.button_style}. falling back to win10 style.")
                 self.draw_button_win10(painter,rect)
 
+            self.draw_title(painter,rect)
+
             #determine icon size
             if self.item.id == "start":
                 icon_size = self.config.theme.start_icon_size
@@ -334,8 +339,7 @@ class TaskbarButton(QAbstractButton):
             else:
                 pix_default = self.icon.pixmap(icon_size,icon_size)
 
-            x = (rect.width()-pix_default.width())//2
-            y = (rect.height()-pix_default.height())//2
+            x,y = self.icon_position(rect,pix_default)
 
             if self.pressed or self.item.active:
                 painter.setOpacity(self.config.theme.icon_opacity)
@@ -373,6 +377,38 @@ class TaskbarButton(QAbstractButton):
             easing_type = getattr(QEasingCurve,name,None)
         return easing_type if easing_type is not None else default
 
+    def has_title_layout(self) -> bool:
+        return not self.combined and bool(self.item.title) and bool(self.item.windows)
+
+    def button_width(self) -> int:
+        if self.has_title_layout():
+            return max(self.config.theme.button_width,self.uncombined_width)
+        return self.config.theme.button_width
+
+    def icon_position(self,rect: QRect,pixmap: QPixmap) -> tuple[int,int]:
+        if self.has_title_layout():
+            icon_area_width = self.config.theme.button_width
+            x = rect.left() + max(0,(icon_area_width-pixmap.width())//2)
+        else:
+            x = rect.left() + (rect.width()-pixmap.width())//2
+
+        y = rect.top() + (rect.height()-pixmap.height())//2
+        return x,y
+
+    def draw_title(self,painter: QPainter,rect: QRect):
+        if not self.has_title_layout():
+            return
+
+        painter.setPen(theme_color(self.config.theme.foreground))
+        font = painter.font()
+        font.setPointSize(9)
+        painter.setFont(font)
+
+        text_rect = QRect(rect)
+        text_rect.setLeft(rect.left()+self.config.theme.button_width)
+        text_rect.setRight(rect.right()-8)
+        painter.drawText(text_rect,Qt.AlignVCenter|Qt.AlignLeft,self.item.title)
+
     def scaled_start_pixmap(self,pixmap: QPixmap,rect: QRect,icon_size: int) -> QPixmap:
         if pixmap.isNull():
             return pixmap
@@ -382,7 +418,7 @@ class TaskbarButton(QAbstractButton):
 
         return pixmap.scaled(rect.size(),Qt.KeepAspectRatio,Qt.SmoothTransformation)
 
-    def draw_indicator(self, painter: QPainter, rect: QRect):
+    def draw_indicator(self,painter: QPainter,rect: QRect):
         if not self.item.running:
             return
 
@@ -411,15 +447,15 @@ class TaskbarButton(QAbstractButton):
             x = center_x - w // 2
             painter.fillRect(x, indicator_y, w, indicator_h, color)
         else:
-            main_w = scale_width(lerp(25, 40, t))
+            main_w = scale_width(lerp(25,40,t))
             gap = scale_width(1)
-            secondary_w = scale_width(lerp(12, 6, t))
+            secondary_w = scale_width(lerp(12,6,t))
 
             total_w = main_w + gap + secondary_w
             start_x = center_x - total_w // 2
 
-            painter.fillRect(start_x, indicator_y, main_w, indicator_h, color)
-            painter.fillRect(start_x + main_w + gap, indicator_y, secondary_w, indicator_h, darker_color)
+            painter.fillRect(start_x,indicator_y,main_w,indicator_h,color)
+            painter.fillRect(start_x+main_w+gap,indicator_y,secondary_w,indicator_h,darker_color)
 
     def draw_button_win10(self,painter: QPainter,rect: QRect):
         #define background color
