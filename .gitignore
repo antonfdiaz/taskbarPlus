@@ -228,3 +228,6 @@ nuitka-crash-report.xml
 
 #ds store thing
 .DS_Store
+
+#executables
+taskbarPlus.exe
