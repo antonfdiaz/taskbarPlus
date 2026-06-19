@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 #app version reported in the about dialog
-APP_VERSION = "0.7.3"
+APP_VERSION = "0.8.0"
 
 @dataclass
 class LayoutConfig:
@@ -61,6 +61,8 @@ class ThemeConfig:
     menu_foreground: str
     menu_hover: str
     menu_separator_color: str
+    start_icon_width: int | None = None
+    start_icon_height: int | None = None
 
 @dataclass
 class AppsConfig:

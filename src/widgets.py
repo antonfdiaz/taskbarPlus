@@ -327,33 +327,37 @@ class TaskbarButton(QAbstractButton):
             #determine icon size
             if self.item.id == "start":
                 icon_size = self.config.theme.start_icon_size
+                icon_dimensions = self.start_icon_dimensions()
             elif self.item.id == "search":
                 icon_size = self.config.theme.search_icon_size
+                icon_dimensions = QSize(icon_size,icon_size)
             elif self.item.id == "task_view":
                 icon_size = self.config.theme.task_view_icon_size
+                icon_dimensions = QSize(icon_size,icon_size)
             else:
                 icon_size = self.config.theme.icon_size
+                icon_dimensions = QSize(icon_size,icon_size)
                 
             if self.item.id == "start" and self.icon_pixmap is not None:
-                pix_default = self.scaled_start_pixmap(self.icon_pixmap,rect,icon_size)
+                pix_default = self.scaled_start_pixmap(self.icon_pixmap,rect,icon_dimensions)
             else:
-                pix_default = self.icon.pixmap(icon_size,icon_size)
+                pix_default = self.icon.pixmap(icon_dimensions)
 
             x,y = self.icon_position(rect,pix_default)
 
             if self.pressed or self.item.active:
                 painter.setOpacity(self.config.theme.icon_opacity)
                 if self.item.id == "start" and self.active_icon_pixmap is not None:
-                    painter.drawPixmap(x,y,self.scaled_start_pixmap(self.active_icon_pixmap,rect,icon_size))
+                    painter.drawPixmap(x,y,self.scaled_start_pixmap(self.active_icon_pixmap,rect,icon_dimensions))
                 elif self.active_icon:
-                    painter.drawPixmap(x,y,self.active_icon.pixmap(icon_size,icon_size))
+                    painter.drawPixmap(x,y,self.active_icon.pixmap(icon_dimensions))
                 else:
                     painter.drawPixmap(x,y,pix_default)
             elif self.hover_icon:
                 if self.item.id == "start" and self.hover_icon_pixmap is not None:
-                    pix_hover = self.scaled_start_pixmap(self.hover_icon_pixmap,rect,icon_size)
+                    pix_hover = self.scaled_start_pixmap(self.hover_icon_pixmap,rect,icon_dimensions)
                 else:
-                    pix_hover = self.hover_icon.pixmap(icon_size,icon_size)
+                    pix_hover = self.hover_icon.pixmap(icon_dimensions)
 
                 painter.setOpacity((1.0-self.icon_hover_progress)*self.config.theme.icon_opacity)
                 painter.drawPixmap(x,y,pix_default)
@@ -409,12 +413,28 @@ class TaskbarButton(QAbstractButton):
         text_rect.setRight(rect.right()-8)
         painter.drawText(text_rect,Qt.AlignVCenter|Qt.AlignLeft,self.item.title)
 
-    def scaled_start_pixmap(self,pixmap: QPixmap,rect: QRect,icon_size: int) -> QPixmap:
+    def has_explicit_start_icon_dimensions(self) -> bool:
+        return (
+            getattr(self.config.theme,"start_icon_width",None) is not None or
+            getattr(self.config.theme,"start_icon_height",None) is not None
+        )
+
+    def start_icon_dimensions(self) -> QSize:
+        icon_size = self.config.theme.start_icon_size
+        return QSize(
+            getattr(self.config.theme,"start_icon_width",None) or icon_size,
+            getattr(self.config.theme,"start_icon_height",None) or icon_size
+        )
+
+    def scaled_start_pixmap(self,pixmap: QPixmap,rect: QRect,icon_dimensions: QSize) -> QPixmap:
         if pixmap.isNull():
             return pixmap
 
+        if self.has_explicit_start_icon_dimensions():
+            return pixmap.scaled(icon_dimensions,Qt.IgnoreAspectRatio,Qt.SmoothTransformation)
+
         if pixmap.width() == pixmap.height():
-            return pixmap.scaled(icon_size,icon_size,Qt.KeepAspectRatio,Qt.SmoothTransformation)
+            return pixmap.scaled(icon_dimensions,Qt.KeepAspectRatio,Qt.SmoothTransformation)
 
         return pixmap.scaled(rect.size(),Qt.KeepAspectRatio,Qt.SmoothTransformation)
 

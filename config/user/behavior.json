@@ -13,6 +13,6 @@
         "everything_path": "C:\\Program Files\\Everything\\Everything.exe"
     },
     "taskbar": {
-        "combine_taskbar_btns": true
+        "combine_taskbar_btns": false
     }
 }
