@@ -442,6 +442,12 @@ class TaskbarButton(QAbstractButton):
         t = self.indicator_hover_progress
         window_count = len(self.item.windows)
 
+        if self.has_title_layout():
+            w = min(rect.width(),scale_width(lerp(40,reference_button_width,t)))
+            x = center_x - w // 2
+            painter.fillRect(x,indicator_y,w,indicator_h,color)
+            return
+
         if window_count <= 1:
             w = scale_width(lerp(36, 44, t))
             x = center_x - w // 2
