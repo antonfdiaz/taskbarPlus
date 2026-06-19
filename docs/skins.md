@@ -148,4 +148,4 @@ If you want to make a custom look for your taskbar, this is the most important f
 - `menu_separator_color`: Color of separators in taskbar context menus.
 
 ## Custom assets
-With skins, you can override default icons by making an `assets` folder inside the skin folder and placing the custom assets you want to use. They have to use the same filename as the asset you want to override for them to be correctly loaded.
+With skins, you can override default icons by making an `assets` folder inside the skin folder and placing the custom assets you want to use. Usualy, they have to use the same filename as the asset you want to override for them to be correctly loaded, but some settings like the taskbar texture allow you to specify the asset path so you can use whatever filename you want.
