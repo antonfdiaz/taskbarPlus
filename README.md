@@ -26,12 +26,14 @@ To get started with taskbarPlus, download the code and run it with Python, or do
 - Install libraries with `pip install -r requirements.txt`
 - Run the code with `py main.py`
 
+> **Note:** taskbarPlus works on Windows 7 if you use VxKex. However, it won't have taskbar blur; an Aero implementation is coming soon. For now, you can use the `default-solid` skin: [Link](https://github.com/antonfdiaz/taskbarPlus/releases/download/0.6.8/default-solid.zip)
+
 ## Build from source
 To build the project and make an .exe, do the following steps:  
 
 - Do the same steps as above except the last one
 - Install build deps with `pip install nuitka imageio`
-- Build by double clicking `build.bat`
+- Build the project by double-clicking `build.bat`
 - To run it, just open `taskbarPlus.exe`
 
 After building, it is best to copy the files `taskbarPlus.exe`, `config/`, `assets/` and `l18n/` to a folder separate from the source code.
@@ -47,7 +49,7 @@ taskbarPlus is configured using **JSON** files. The configuration folder is loca
 
 Skins are located at `taskbarPlus/config/skins`. You can create your own skins by creating a new folder in the skins directory and adding `metadata.json`, `theme.json` and `layout.json` and any necessary icons in the `assets` folder.
 
-Normally it is easier to start by copying an existing skin and modifying it to suit your needs.  
+It is usually easiest to start by copying an existing skin and modifying it to suit your needs.  
 You can view documentation about skins [here](https://github.com/antonfdiaz/taskbarPlus/blob/main/docs/skins.md). 
 
 taskbarPlus comes with 5 default skins:
