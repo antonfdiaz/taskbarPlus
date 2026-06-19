@@ -83,9 +83,14 @@ class SearchBehaviorConfig:
     everything_path: str = r"C:\Program Files\Everything\Everything.exe"
 
 @dataclass
+class TaskbarBehaviorConfig:
+    combine_taskbar_btns: bool = True
+
+@dataclass
 class BehaviorConfig:
     clock: ClockBehaviorConfig = field(default_factory=ClockBehaviorConfig)
     search: SearchBehaviorConfig = field(default_factory=SearchBehaviorConfig)
+    taskbar: TaskbarBehaviorConfig = field(default_factory=TaskbarBehaviorConfig)
 
 @dataclass
 class SettingsConfig:
@@ -126,6 +131,7 @@ class Config:
         self.behavior = BehaviorConfig(
             clock=ClockBehaviorConfig(**behavior_data.get("clock",{})),
             search=SearchBehaviorConfig(**behavior_data.get("search",{})),
+            taskbar=TaskbarBehaviorConfig(**behavior_data.get("taskbar",{}))
         )
 
         #load skin config + metadata

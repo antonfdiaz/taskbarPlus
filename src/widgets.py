@@ -167,7 +167,7 @@ class TaskbarButton(QAbstractButton):
         self.indicator_anim.setDuration(150)
         self.indicator_anim.setEasingCurve(QEasingCurve.OutCubic)
 
-        self.combined = False
+        self.combined = self.config.behavior.taskbar.combine_taskbar_btns and item.title and item.windows
         self.uncombined_width = 200
 
         self.setMouseTracking(True)

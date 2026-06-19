@@ -11,5 +11,8 @@
         "engine": "windows_search",
         "box_clear_button": false,
         "everything_path": "C:\\Program Files\\Everything\\Everything.exe"
+    },
+    "taskbar": {
+        "combine_taskbar_btns": true
     }
 }
