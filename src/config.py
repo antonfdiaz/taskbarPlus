@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 #app version reported in the about dialog
-APP_VERSION = "0.8.0"
+APP_VERSION = "0.8.1"
 
 @dataclass
 class LayoutConfig:
@@ -136,15 +136,23 @@ class Config:
             taskbar=TaskbarBehaviorConfig(**behavior_data.get("taskbar",{}))
         )
 
-        #load skin config + metadata
-        with open(self.skins_dir/self.settings.skin/"metadata.json","r",encoding="utf-8") as f:
-            skin_md_data = json.load(f)
+        try:
+            #load skin config + metadata
+            with open(self.skins_dir/self.settings.skin/"metadata.json","r",encoding="utf-8") as f:
+                skin_md_data = json.load(f)
 
-        with open(self.skins_dir/self.settings.skin/"layout.json","r",encoding="utf-8") as f:
-            layout_data = json.load(f)
+            with open(self.skins_dir/self.settings.skin/"layout.json","r",encoding="utf-8") as f:
+                layout_data = json.load(f)
 
-        with open(self.skins_dir/self.settings.skin/"theme.json","r",encoding="utf-8") as f:
-            theme_data = json.load(f)
+            with open(self.skins_dir/self.settings.skin/"theme.json","r",encoding="utf-8") as f:
+                theme_data = json.load(f)
+        except FileNotFoundError as e:
+            from PySide6.QtWidgets import QMessageBox
+            msgbox = QMessageBox()
+            msgbox.setIcon(QMessageBox.Critical)
+            msgbox.setText(f"Error loading skin '{self.settings.skin}': {e}")
+            msgbox.setWindowTitle("Skin missing!")
+            msgbox.exec_()
 
         self.skin_metadata = SkinMetadata(**skin_md_data)
         self.layout = LayoutConfig(**layout_data)
