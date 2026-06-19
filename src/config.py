@@ -3,6 +3,7 @@ from dataclasses import asdict,dataclass,field
 from pathlib import Path
 import sys
 
+#app version reported in the about dialog
 APP_VERSION = "0.7.3"
 
 @dataclass
@@ -99,6 +100,7 @@ class SkinMetadata:
     version: str
 
 class Config:
+    """Class that manages and gives access to the current configuration."""
     def __init__(self,config_dir="config"):
         global APP_VERSION
 

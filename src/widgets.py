@@ -12,6 +12,8 @@ from src.utils import menu_style,pixmap_dominant_color,theme_color
 from threading import Thread
 
 class TaskbarAppsBar(QWidget):
+    """Container widget that holds the taskbar buttons for apps."""
+
     itemClicked = Signal(object,object)
     appDropped = Signal(str)
 
@@ -84,6 +86,8 @@ class TaskbarAppsBar(QWidget):
         super().dropEvent(event)
 
 class ClockWidget(QLabel):
+    """Clock widget that displays the current date and time."""
+
     def __init__(self,config: Config,show_date=True,show_time=True):
         super().__init__()
         self.config = config
@@ -111,6 +115,7 @@ class ClockWidget(QLabel):
         QTimer.singleShot(1000,self.update_time)
 
 class TaskbarButton(QAbstractButton):
+    """Taskbar button widget, represents an item on the taskbar."""
     itemAction = Signal(object,object)
     button_spr_cache: dict[str,QPixmap] = {}
 
@@ -610,6 +615,7 @@ class TaskbarButton(QAbstractButton):
         painter.restore()
 
 class ShowDesktopButton(QAbstractButton):
+    """Button that shows or hides desktop windows when clicked."""
     def __init__(self,config: Config,parent=None):
         super().__init__(parent)
         self.config = config
@@ -673,6 +679,7 @@ class ShowDesktopButton(QAbstractButton):
         super().mouseReleaseEvent(event)
 
 class TrayWidget(QWidget):
+    """Widget that contains system tray icons."""
     itemClicked = Signal(object)
     itemRightClicked = Signal(object)
 
@@ -738,6 +745,7 @@ class TrayWidget(QWidget):
         self.set_collapsed(not self.collapsed)
 
 class TrayIcon(QAbstractButton):
+    """Button that represents a system tray icon."""
     rightClicked = Signal(object)
 
     def __init__(self,item: TrayItem,config: Config,parent=None):
@@ -931,6 +939,7 @@ class SearchBox(QLineEdit):
             release_key(win32con.VK_LWIN)
 
 class TrayCollapseButton(QAbstractButton):
+    """Arrow button that collapses or expands the system tray."""
     def __init__(self,config: Config,parent=None):
         super().__init__(parent)
         self.config = config

@@ -19,6 +19,7 @@ import win32con
 import os
 
 class TaskbarRootWidget(QWidget):
+    """Root widget of the taskbar. Paints the background and texture."""
     def __init__(self,config: Config,parent=None):
         super().__init__(parent)
         self.config = config
@@ -64,6 +65,8 @@ class TaskbarRootWidget(QWidget):
             painter.end()
 
 class MainWindow(QMainWindow):
+    """Main taskbar window. Does a lot of stuff."""
+
     config_reload_requested = Signal()
 
     def __init__(self,config: Config):
@@ -858,7 +861,7 @@ class MainWindow(QMainWindow):
             return
 
         if isinstance(button,int):
-            self.activate_window(button)
+            activate_window(button,self)
             return
 
         count = len(item.windows)
@@ -869,18 +872,9 @@ class MainWindow(QMainWindow):
                 self.schedule_apps_refresh()
         elif count == 1:
             hwnd = item.windows[0].hwnd
-            self.activate_window(hwnd)
+            activate_window(hwnd,self)
         else:
             self.show_windows_menu(item,button)
-
-    def activate_window(self,hwnd: int):
-        try:
-            win32gui.ShowWindow(hwnd,win32con.SW_RESTORE)
-            win32gui.SetForegroundWindow(hwnd)
-            self.refresh_active_window(hwnd)
-            self.schedule_apps_refresh(250)
-        except Exception as e:
-            print("couldn't activate window:",e)
 
     def show_windows_menu(self,item: TaskbarItem,button: QWidget):
         menu = QMenu(self)
@@ -889,7 +883,7 @@ class MainWindow(QMainWindow):
         for window in item.windows:
             action = menu.addAction(window.title)
             action.triggered.connect(
-                lambda checked=False,hwnd=window.hwnd: self.activate_window(hwnd)
+                lambda checked=False,hwnd=window.hwnd: activate_window(hwnd,self)
             )
 
         new_win_action = menu.addAction(self.tr("taskbar.menu.new_win"))

@@ -346,6 +346,7 @@ def _tray_anchor_lparam(item):
     return _make_lparam(item.anchor_x,item.anchor_y)
 
 def send_tray_icon_click(item,button="left"):
+    """Simulates a click on a system tray icon."""
     hwnd = item.hwnd
     uid = item.uid
     callback_message = item.callback_message
@@ -371,11 +372,11 @@ def send_tray_icon_click(item,button="left"):
         except win32gui.error:
             pass
 
-        # Newer tray icons receive coordinates in wParam and the icon id in HIWORD(lParam).
+        #newer tray icons receive coordinates in wParam and the icon id in HIWORD(lParam)
         win32gui.PostMessage(hwnd,callback_message,_tray_anchor_lparam(item),_make_lparam(down,uid))
         win32gui.PostMessage(hwnd,callback_message,_tray_anchor_lparam(item),_make_lparam(v4_up,uid))
 
-        # Older tray icons expect wParam=uid and lParam=mouse message.
+        #older tray icons expect wParam=uid and lParam=mouse message
         win32gui.PostMessage(hwnd,callback_message,uid,down)
         win32gui.PostMessage(hwnd,callback_message,uid,up)
         win32gui.PostMessage(hwnd,win32con.WM_NULL,0,0)
@@ -402,11 +403,13 @@ def show_taskbar():
 
 #these 2 are only for windows 7
 def hide_start_btn():
+    """Hides the Start button atom on Windows 7."""
     user32 = ctypes.WinDLL("user32")
     START_ATOM = wintypes.LPCWSTR(0xC017)
     win32gui.ShowWindow(user32.FindWindowW(START_ATOM,None),win32con.SW_HIDE)
 
 def show_start_btn():
+    """Shows the Start button atom on Windows 7."""
     user32 = ctypes.WinDLL("user32")
     START_ATOM = wintypes.LPCWSTR(0xC017)
     win32gui.ShowWindow(user32.FindWindowW(START_ATOM,None),win32con.SW_SHOW)
@@ -453,6 +456,7 @@ def is_start_menu_open():
     return process_name in START_MENU_PROCESS_NAMES or title in START_MENU_TITLES
 
 def get_real_winver(): #get real windows version
+    """Get the real Windows version, even if the program runs in compatibility mode."""
     global REAL_WINDOWS_VERSION
     if REAL_WINDOWS_VERSION is not None:
         return REAL_WINDOWS_VERSION
@@ -472,3 +476,13 @@ def get_real_winver(): #get real windows version
 def is_windows_7():
     major,minor,_ = get_real_winver()
     return major == 6 and minor == 1
+
+def activate_window(hwnd: int,main_window: QWidget = None):
+    try:
+        win32gui.ShowWindow(hwnd,win32con.SW_RESTORE)
+        win32gui.SetForegroundWindow(hwnd)
+        if main_window:
+            main_window.refresh_active_window(hwnd)
+            main_window.schedule_apps_refresh(250)
+    except Exception as e:
+        print("couldn't activate window:",e)
