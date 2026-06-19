@@ -13,6 +13,8 @@
 	"taskbar.menu.behavior.search.engine": "Engine",
 	"taskbar.menu.behavior.search.box_clear_button": "Clear button",
 	"taskbar.menu.behavior.search.everything_path": "Everything path",
+	"taskbar.menu.behavior.taskbar": "Taskbar",
+	"taskbar.menu.behavior.taskbar.combine_taskbar_btns": "Combine taskbar buttons",
     "taskbar.menu.language": "Language",
 	"taskbar.menu.about": "About...",
 	"taskbar.menu.refresh": "Refresh",

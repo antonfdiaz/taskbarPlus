@@ -13,6 +13,8 @@
 	"taskbar.menu.behavior.search.engine": "Suchmaschine",
 	"taskbar.menu.behavior.search.box_clear_button": "Löschtaste",
 	"taskbar.menu.behavior.search.everything_path": "Everything-Pfad",
+	"taskbar.menu.behavior.taskbar": "Taskleiste",
+	"taskbar.menu.behavior.taskbar.combine_taskbar_btns": "Taskleistenschaltflächen kombinieren",
 	"taskbar.menu.language": "Sprache",
 	"taskbar.menu.about": "Info...",
 	"taskbar.menu.refresh": "Aktualisieren",

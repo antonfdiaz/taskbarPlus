@@ -233,6 +233,19 @@ class MainWindow(QMainWindow):
         everything_path_action.setToolTip(self.config.behavior.search.everything_path)
 
         self.behavior_menu.addMenu(self.search_behavior_menu)
+
+        self.taskbar_behavior_menu = QMenu(self.tr("taskbar.menu.behavior.taskbar"),self.behavior_menu)
+        self.taskbar_behavior_menu.setStyleSheet(menu_style(self.config))
+
+        combine_taskbar_btns_action = self.taskbar_behavior_menu.addAction(
+            self.tr("taskbar.menu.behavior.taskbar.combine_taskbar_btns"),
+            lambda: self.change_setting("behavior","taskbar","combine_taskbar_btns")
+        )
+        combine_taskbar_btns_action.setCheckable(True)
+        combine_taskbar_btns_action.setChecked(self.config.behavior.taskbar.combine_taskbar_btns)
+
+        self.behavior_menu.addMenu(self.taskbar_behavior_menu)
+
         return self.behavior_menu
 
     def change_setting(self,section: str,*keys: str):

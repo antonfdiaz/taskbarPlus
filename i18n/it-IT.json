@@ -13,6 +13,8 @@
 	"taskbar.menu.behavior.search.engine": "Motore",
 	"taskbar.menu.behavior.search.box_clear_button": "Pulsante Cancella",
 	"taskbar.menu.behavior.search.everything_path": "Percorso di Everything",
+	"taskbar.menu.behavior.taskbar": "Barra delle applicazioni",
+	"taskbar.menu.behavior.taskbar.combine_taskbar_btns": "Combina pulsanti della barra delle applicazioni",
     "taskbar.menu.language": "Lingua",
 	"taskbar.menu.about": "Informazioni...",
 	"taskbar.menu.refresh": "Aggiorna",

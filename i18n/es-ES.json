@@ -13,6 +13,8 @@
 	"taskbar.menu.behavior.search.engine": "Motor",
 	"taskbar.menu.behavior.search.box_clear_button": "Botón limpiar",
 	"taskbar.menu.behavior.search.everything_path": "Ruta de Everything",
+	"taskbar.menu.behavior.taskbar": "Barra de tareas",
+	"taskbar.menu.behavior.taskbar.combine_taskbar_btns": "Combinar botones de la barra de tareas",
 	"taskbar.menu.language": "Idioma",
 	"taskbar.menu.about": "Acerca de...",
 	"taskbar.menu.refresh": "Actualizar",

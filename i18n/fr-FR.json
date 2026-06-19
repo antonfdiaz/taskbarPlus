@@ -13,6 +13,8 @@
 	"taskbar.menu.behavior.search.engine": "Moteur",
 	"taskbar.menu.behavior.search.box_clear_button": "Bouton d’effacement",
 	"taskbar.menu.behavior.search.everything_path": "Chemin d’Everything",
+	"taskbar.menu.behavior.taskbar": "Barre des tâches",
+	"taskbar.menu.behavior.taskbar.combine_taskbar_btns": "Combiner les boutons de la barre des tâches",
     "taskbar.menu.language": "Langue",
 	"taskbar.menu.about": "À propos...",
 	"taskbar.menu.refresh": "Actualiser",

@@ -13,6 +13,8 @@
 	"taskbar.menu.behavior.search.engine": "Движок",
 	"taskbar.menu.behavior.search.box_clear_button": "Кнопка очистки",
 	"taskbar.menu.behavior.search.everything_path": "Путь к Everything",
+	"taskbar.menu.behavior.taskbar": "Панель задач",
+	"taskbar.menu.behavior.taskbar.combine_taskbar_btns": "Объединять кнопки панели задач",
 	"taskbar.menu.language": "Язык",
 	"taskbar.menu.about": "О программе...",
 	"taskbar.menu.refresh": "Обновить",

@@ -13,6 +13,8 @@
 	"taskbar.menu.behavior.search.engine": "引擎",
 	"taskbar.menu.behavior.search.box_clear_button": "清除按钮",
 	"taskbar.menu.behavior.search.everything_path": "Everything 路径",
+	"taskbar.menu.behavior.taskbar": "任务栏",
+	"taskbar.menu.behavior.taskbar.combine_taskbar_btns": "合并任务栏按钮",
 	"taskbar.menu.language": "语言",
 	"taskbar.menu.about": "关于...",
 	"taskbar.menu.refresh": "刷新",
