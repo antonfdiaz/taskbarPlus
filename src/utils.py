@@ -53,6 +53,12 @@ def menu_style(config: Config):
             height: 1px;
             background-color: {theme_color_css(theme.menu_separator_color)};
         }}
+        QMenu::icon {{
+            margin-left: 10px;
+        }}
+        QMenu::right-arrow {{
+            height: 12px;
+        }}
     """
 
 def pixmap_dominant_color(pixmap: QPixmap | None):
