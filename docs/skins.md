@@ -2,7 +2,7 @@
 This file contains documentation on JSON files and custom assets for making taskbarPlus skins.
 
 ## metadata.json
-On this file you define information about the skin, such as name, author, version and ID. The ID is the identifier for your skin. It's best to put a short ID for your skin, and avoid spaces. Example:
+In this file you define information about the skin, such as name, author, version and ID. The ID is the identifier for your skin. It's best to put a short ID for your skin, and avoid spaces. Example:
 ```
 {
     "id": "my_skin",
@@ -13,7 +13,7 @@ On this file you define information about the skin, such as name, author, versio
 ```
 
 ## layout.json
-On this file you define the position of the widgets in the taskbar.  
+In this file you define the position of the widgets in the taskbar.  
 You can put widgets on the side of the taskbar you want. These are the available widgets:
 - `start`: Start button
 - `search`: Search button/box
@@ -148,4 +148,4 @@ If you want to make a custom look for your taskbar, this is the most important f
 - `menu_separator_color`: Color of separators in taskbar context menus.
 
 ## Custom assets
-With skins, you can override default icons by making an `assets` folder inside the skin folder and placing the custom assets you want to use. Usualy, they have to use the same filename as the asset you want to override for them to be correctly loaded, but some settings like the taskbar texture allow you to specify the asset path so you can use whatever filename you want.
+With skins, you can override default icons by making an `assets` folder inside the skin folder and placing the custom assets you want to use. Usually, they have to use the same filename as the asset you want to override for them to be correctly loaded, but some settings like the taskbar texture allow you to specify the asset path so you can use whatever filename you want. Paths to assets are relative, for example, `assets/start.png`.
