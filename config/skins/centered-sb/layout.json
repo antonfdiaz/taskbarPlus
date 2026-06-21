@@ -1,5 +1,9 @@
 {
-    "left": [],
+    "left": [
+        "restart_explorer",
+        "open_config",
+        "volume_mixer"
+    ],
     "center": [
         "start",
         "search",
