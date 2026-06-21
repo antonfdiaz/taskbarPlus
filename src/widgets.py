@@ -26,6 +26,13 @@ class TaskbarAppsBar(QWidget):
         self.drag_start_pos = None
         self.drag_start_index = -1
         self.suppress_click = False
+        self.drop_indicator = QWidget(self)
+        self.drop_indicator.setFixedWidth(2)
+        self.drop_indicator.setStyleSheet(f"background: {self.config.theme.accent}; border-radius: 1px;")
+        self.drop_indicator.hide()
+        self.drop_indicator_anim = QPropertyAnimation(self.drop_indicator,b"geometry",self)
+        self.drop_indicator_anim.setDuration(90)
+        self.drop_indicator_anim.setEasingCurve(QEasingCurve.OutCubic)
         self.setAcceptDrops(True)
         self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
 
@@ -74,6 +81,7 @@ class TaskbarAppsBar(QWidget):
             self.layout.addWidget(btn)
 
         self.adjustSize()
+        self.drop_indicator.raise_()
 
     def eventFilter(self,obj,event):
         if not isinstance(obj,TaskbarButton):
@@ -113,14 +121,49 @@ class TaskbarAppsBar(QWidget):
                 return index
         return self.layout.count()
 
+    def drop_indicator_rect(self,index: int) -> QRect:
+        count = self.layout.count()
+        if count == 0:
+            x = 0
+        elif index <= 0:
+            first = self.layout.itemAt(0).widget().geometry()
+            x = first.left()
+        elif index >= count:
+            last = self.layout.itemAt(count-1).widget().geometry()
+            x = last.right()+1
+        else:
+            before = self.layout.itemAt(index-1).widget().geometry()
+            after = self.layout.itemAt(index).widget().geometry()
+            x = (before.right()+after.left())//2
+
+        return QRect(max(0,x-1),4,3,max(1,self.height()-8))
+
+    def show_drop_indicator(self,index: int):
+        rect = self.drop_indicator_rect(index)
+        if not self.drop_indicator.isVisible():
+            self.drop_indicator.setGeometry(rect)
+            self.drop_indicator.show()
+            return
+
+        self.drop_indicator_anim.stop()
+        self.drop_indicator_anim.setStartValue(self.drop_indicator.geometry())
+        self.drop_indicator_anim.setEndValue(rect)
+        self.drop_indicator_anim.start()
+
+    def hide_drop_indicator(self):
+        self.drop_indicator_anim.stop()
+        self.drop_indicator.hide()
+
     def dragMoveEvent(self,event):
         if event.mimeData().hasFormat("application/x-tbp-apps-index"):
+            self.show_drop_indicator(self.drop_index_at(event.position().toPoint().x()))
             event.acceptProposedAction()
             return
         super().dragMoveEvent(event)
 
     def dragEnterEvent(self,event):
         if event.mimeData().hasFormat("application/x-tbp-apps-index"):
+            self.show_drop_indicator(self.drop_index_at(event.position().toPoint().x()))
             event.acceptProposedAction()
             return
         if event.mimeData().hasUrls():
@@ -132,6 +175,7 @@ class TaskbarAppsBar(QWidget):
         if event.mimeData().hasFormat("application/x-tbp-apps-index"):
             from_index = int(bytes(event.mimeData().data("application/x-tbp-apps-index")).decode("ascii"))
             to_index = self.drop_index_at(event.position().toPoint().x())
+            self.hide_drop_indicator()
             if from_index < to_index:
                 to_index -= 1
             if from_index != to_index:
@@ -146,6 +190,10 @@ class TaskbarAppsBar(QWidget):
                 event.acceptProposedAction()
                 return
         super().dropEvent(event)
+
+    def dragLeaveEvent(self,event):
+        self.hide_drop_indicator()
+        super().dragLeaveEvent(event)
 
 class ClockWidget(QLabel):
     """Clock widget that displays the current date and time."""
