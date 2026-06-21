@@ -5,6 +5,7 @@ from pathlib import Path
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import QTimer,Qt,Signal
+from plugins.restart_explorer import RestartExplorerButton
 from src.l18n import L18n
 from src.config import Config,SkinMetadata
 from src.models import *
@@ -477,6 +478,8 @@ class MainWindow(QMainWindow):
                 widget = ClockWidget(self.config,show_date=self.config.behavior.clock.show_date,show_time=self.config.behavior.clock.show_time)
             elif section == "show_desktop":
                 widget = ShowDesktopButton(self.config)
+            elif section == "restart_explorer":
+                widget = RestartExplorerButton(self.config)
             else:
                 continue
 

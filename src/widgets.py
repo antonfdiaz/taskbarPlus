@@ -424,6 +424,24 @@ class TaskbarBaseButton(QAbstractButton):
         self.update()
         super().mouseReleaseEvent(event)
 
+    def paintEvent(self,event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        try:
+            rect = self.rect()
+            self.draw_common_bg(painter,rect)
+
+            icon = self.icon()
+            text = self.text()
+            if not icon.isNull():
+                self.draw_centered_icon(painter,rect,icon)
+            elif text:
+                painter.setPen(theme_color(self.config.theme.foreground))
+                painter.drawText(rect.adjusted(6,0,-6,0),Qt.AlignCenter,text)
+        finally:
+            painter.end()
+
 class TaskbarButton(TaskbarBaseButton):
     """Taskbar button widget, represents an item on the taskbar."""
     itemAction = Signal(object,object)

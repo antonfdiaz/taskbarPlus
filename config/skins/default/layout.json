@@ -3,6 +3,7 @@
         "start",
         "search",
         "task_view",
+        "restart_explorer",
         "apps"
     ],
     "center": [],
