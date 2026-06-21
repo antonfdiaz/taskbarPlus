@@ -3,7 +3,11 @@
         "start",
         "search",
         "task_view",
+        "separator",
         "restart_explorer",
+        "open_config",
+        "volume_mixer",
+        "separator",
         "apps"
     ],
     "center": [],

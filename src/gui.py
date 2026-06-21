@@ -5,7 +5,6 @@ from pathlib import Path
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import QTimer,Qt,Signal
-from plugins.restart_explorer import RestartExplorerButton
 from src.l18n import L18n
 from src.config import Config,SkinMetadata
 from src.models import *
@@ -359,6 +358,38 @@ class MainWindow(QMainWindow):
         self.config.save_settings()
         self.reload_from_disk()
 
+    def scan_widget_plugins(self):
+        """Scans for custom widget plugins and returns a layout id -> widget class map."""
+        plugins_dir = Path(__file__).parent.parent/"plugins"
+        if not plugins_dir.exists():
+            return {}
+
+        widget_classes = {}
+        for plugin_file in plugins_dir.iterdir():
+            if not plugin_file.is_file() or plugin_file.suffix.lower() != ".py":
+                continue
+
+            module_name = f"plugins.{plugin_file.stem}"
+            try:
+                module = __import__(module_name, fromlist=[""])
+                print(f"imported plugin {module_name}")
+            except Exception as e:
+                print(f"couldn't import plugin {module_name}:",e)
+                continue
+
+            for attr_name in dir(module):
+                attr = getattr(module, attr_name)
+                if (
+                    isinstance(attr,type) and
+                    issubclass(attr,QWidget) and
+                    attr is not QWidget and
+                    attr.__module__ == module.__name__
+                ):
+                    plugin_id = getattr(attr,"plugin_id",None) or getattr(attr,"widget_id",None) or plugin_file.stem
+                    widget_classes[str(plugin_id).lower()] = attr
+
+        return widget_classes
+
     def rebuild_ui(self):
         self.load_l18n()
         self.apps_bars = []
@@ -392,6 +423,8 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(0)
         central_widget.setLayout(layout)
+
+        self.widget_plugins = self.scan_widget_plugins()
 
         sections = [*self.config.layout.left,*self.config.layout.center,*self.config.layout.right]
         apps_items = self.build_taskbar_items() if "apps" in sections else []
@@ -478,10 +511,15 @@ class MainWindow(QMainWindow):
                 widget = ClockWidget(self.config,show_date=self.config.behavior.clock.show_date,show_time=self.config.behavior.clock.show_time)
             elif section == "show_desktop":
                 widget = ShowDesktopButton(self.config)
-            elif section == "restart_explorer":
-                widget = RestartExplorerButton(self.config)
             else:
-                continue
+                plugin_class = self.widget_plugins.get(section.lower())
+                if plugin_class is None:
+                    continue
+                try:
+                    widget = plugin_class(self.config)
+                except Exception as e:
+                    print(f"couldn't instantiate plugin {plugin_class.__name__}:",e)
+                    continue
 
             section_layout.addWidget(widget)
 
