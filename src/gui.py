@@ -139,7 +139,7 @@ class MainWindow(QMainWindow):
     def rebuild_context_menu(self):
         self.menu.clear()
         self.menu.setStyleSheet(menu_style(self.config))
-        self.menu.addAction(self.tr("taskbar.menu.task_manager"),lambda: launch_windows_app("taskmgr.exe"))
+        self.menu.addAction(self.tr("taskbar.menu.task_manager"),lambda: launch_windows_app("taskmgr.exe")).setIcon(QIcon(self.config.resolve_asset("assets/taskmgr.png")).pixmap(16,16))
         self.menu.addSeparator()
         self.skins_menu = self.create_skins_menu()
         self.menu.addMenu(self.skins_menu)

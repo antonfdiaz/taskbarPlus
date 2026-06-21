@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 
 #app version reported in the about dialog
-APP_VERSION = "0.8.5"
+APP_VERSION = "0.8.6"
 
 @dataclass
 class LayoutConfig:
