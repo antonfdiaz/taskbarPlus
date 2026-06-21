@@ -16,12 +16,16 @@ class TaskbarAppsBar(QWidget):
 
     itemClicked = Signal(object,object)
     appDropped = Signal(str)
+    appReordered = Signal(int,int)
 
     def __init__(self,items: list[TaskbarItem],config: Config,l18n: L18n):
         super().__init__()
         self.config = config
         self.l18n = l18n
         self.items = items
+        self.drag_start_pos = None
+        self.drag_start_index = -1
+        self.suppress_click = False
         self.setAcceptDrops(True)
         self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
 
@@ -63,20 +67,78 @@ class TaskbarAppsBar(QWidget):
                 tooltip = f"{item.title} ({len(item.windows)})"
             btn.setToolTip(tooltip)
             btn.clicked.connect(
-                lambda checked=False,item=item,btn=btn: self.itemClicked.emit(item,btn)
+                lambda checked=False,item=item,btn=btn: self.on_button_clicked(item,btn)
             )
             btn.itemAction.connect(self.itemClicked.emit)
+            btn.installEventFilter(self)
             self.layout.addWidget(btn)
 
         self.adjustSize()
 
+    def eventFilter(self,obj,event):
+        if not isinstance(obj,TaskbarButton):
+            return super().eventFilter(obj,event)
+
+        if event.type() == QEvent.MouseButtonPress and event.button() == Qt.LeftButton:
+            self.drag_start_pos = event.position().toPoint()
+            self.drag_start_index = self.layout.indexOf(obj)
+        elif event.type() == QEvent.MouseMove and self.drag_start_index >= 0:
+            if not event.buttons() & Qt.LeftButton:
+                return super().eventFilter(obj,event)
+            if (event.position().toPoint()-self.drag_start_pos).manhattanLength() < QApplication.startDragDistance():
+                return super().eventFilter(obj,event)
+
+            drag = QDrag(obj)
+            mime = QMimeData()
+            mime.setData("application/x-tbp-apps-index",QByteArray(str(self.drag_start_index).encode("ascii")))
+            drag.setMimeData(mime)
+            drag.exec(Qt.MoveAction)
+            self.drag_start_index = -1
+            self.suppress_click = True
+        elif event.type() == QEvent.MouseButtonRelease:
+            self.drag_start_index = -1
+
+        return super().eventFilter(obj,event)
+
+    def on_button_clicked(self,item: TaskbarItem,btn: TaskbarButton):
+        if self.suppress_click:
+            self.suppress_click = False
+            return
+        self.itemClicked.emit(item,btn)
+
+    def drop_index_at(self,x: int) -> int:
+        for index in range(self.layout.count()):
+            widget = self.layout.itemAt(index).widget()
+            if widget is not None and x < widget.geometry().center().x():
+                return index
+        return self.layout.count()
+
+    def dragMoveEvent(self,event):
+        if event.mimeData().hasFormat("application/x-tbp-apps-index"):
+            event.acceptProposedAction()
+            return
+        super().dragMoveEvent(event)
+
     def dragEnterEvent(self,event):
+        if event.mimeData().hasFormat("application/x-tbp-apps-index"):
+            event.acceptProposedAction()
+            return
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
             return
         super().dragEnterEvent(event)
 
     def dropEvent(self,event):
+        if event.mimeData().hasFormat("application/x-tbp-apps-index"):
+            from_index = int(bytes(event.mimeData().data("application/x-tbp-apps-index")).decode("ascii"))
+            to_index = self.drop_index_at(event.position().toPoint().x())
+            if from_index < to_index:
+                to_index -= 1
+            if from_index != to_index:
+                self.appReordered.emit(from_index,to_index)
+            event.acceptProposedAction()
+            return
+
         for url in event.mimeData().urls():
             path = url.toLocalFile()
             if path:

@@ -73,7 +73,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.config: Config = config
         self.load_l18n()
-        self.dynamic_app_order: list[str] = []
+        self.app_order: list[str] = []
         self.apps_bars: list[TaskbarAppsBar] = []
         self.start_buttons: list[TaskbarButton] = []
         self.tray_widgets: list[TrayWidget] = []
@@ -458,6 +458,7 @@ class MainWindow(QMainWindow):
                 widget = TaskbarAppsBar(apps_items,self.config,self.l18n)
                 widget.itemClicked.connect(self.on_item_clicked)
                 widget.appDropped.connect(self.pin_app_from_path)
+                widget.appReordered.connect(self.reorder_apps)
                 self.apps_bars.append(widget)
             elif section == "tray":
                 collapse_button = TrayCollapseButton(self.config)
@@ -803,22 +804,37 @@ class MainWindow(QMainWindow):
                 windows=windows
             )
 
-        current_dynamic_ids = set(dynamic_items)
-        stable_dynamic_order = [
-            item_id for item_id in self.dynamic_app_order
-            if item_id in current_dynamic_ids
-        ]
-
-        for item_id in dynamic_items:
-            if item_id not in stable_dynamic_order:
-                stable_dynamic_order.append(item_id)
-
-        self.dynamic_app_order = stable_dynamic_order
-
-        for item_id in stable_dynamic_order:
-            items.append(dynamic_items[item_id])
+        all_items = {item.id: item for item in items}
+        all_items.update(dynamic_items)
+        stable_order = [item_id for item_id in self.app_order if item_id in all_items]
+        for item_id in all_items:
+            if item_id not in stable_order:
+                stable_order.append(item_id)
+        self.app_order = stable_order
+        items = [all_items[item_id] for item_id in stable_order]
 
         return items
+
+    def reorder_apps(self,from_index: int,to_index: int):
+        if not self.apps_bars:
+            return
+
+        items = list(self.apps_bars[0].items)
+        if not (0 <= from_index < len(items) and 0 <= to_index < len(items)):
+            return
+
+        item = items.pop(from_index)
+        items.insert(to_index,item)
+        self.app_order = [item.id for item in items]
+
+        pinned_ids = set(self.app_order)
+        self.config.apps.pinned.sort(
+            key=lambda app: self.app_order.index(app["id"]) if app.get("id") in pinned_ids else len(self.app_order)
+        )
+        self.config.save_apps()
+
+        for apps_bar in self.apps_bars:
+            apps_bar.set_items(items)
     
     def refresh_apps(self):
         self.apps_refresh_pending = False
