@@ -1,5 +1,6 @@
 from src.widgets import TaskbarBaseButton
 from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QMessageBox
 from src.shell import hide_taskbar
 import time
 import subprocess
@@ -17,6 +18,14 @@ class RestartExplorerButton(TaskbarBaseButton):
         self.setIcon(QIcon(self.config.resolve_asset("assets/refresh.png")))
 
     def restart_explorer(self):
-        subprocess.run("taskkill /f /im explorer.exe && start explorer.exe",shell=True)
-        time.sleep(1)
-        hide_taskbar()
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowTitle("Restart Explorer")
+        msg.setText("Are you sure you want to restart Windows Explorer?")
+        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg.setDefaultButton(QMessageBox.No)
+        result = msg.exec()
+        if result == QMessageBox.Yes:
+            subprocess.run("taskkill /f /im explorer.exe && start explorer.exe",shell=True)
+            time.sleep(1)
+            hide_taskbar()
