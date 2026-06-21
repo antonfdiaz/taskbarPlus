@@ -7,7 +7,7 @@ taskbarPlus is a very customizable taskbar replacement for Windows.
 
 ## Features
 
-- Customize a lot of stuff
+- Custom widget plugins
 - Create skins and use custom icons
 - Tray support
 - "Everything" support for search
