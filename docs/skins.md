@@ -1,5 +1,5 @@
 # Skins
-This file contains documentation on JSON files and custom assets for making taskbarPlus skins.
+This file contains documentation on JSON/JSONC files and custom assets for making taskbarPlus skins.
 
 ## metadata.json
 In this file you define information about the skin, such as name, author, version and ID. The ID is the identifier for your skin. It's best to put a short ID for your skin, and avoid spaces. Example:
@@ -32,8 +32,10 @@ Example file:
 }
 ```
 
-## theme.json
+## theme.jsonc
 If you want to make a custom look for your taskbar, this is the most important file. There are a lot of properties in this file, each one to define something about the taskbar and its items, such as colors, sizes, icons, and more. These are the current properties:
+
+You can use simple `// comments` in this file. Older `theme.json` files without comments are still supported.
 
 ### Taskbar
 

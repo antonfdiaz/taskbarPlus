@@ -1,36 +1,42 @@
 {
+    //taskbar
     "taskbar_height": 40,
     "taskbar_texture": "assets/taskbar.png",
     "taskbar_texture_mode": "stretch",
     "taskbar_texture_opacity": 0.6,
     "taskbar_blur": true,
     "taskbar_blur_tint": "#44202020",
+    //colors
     "background": "#00000000",
     "foreground": "#ffffff",
+    "accent": "#4cc2ff",
     "hover": "#22cccccc",
     "active": "#55ffffff",
-    "accent": "#4cc2ff",
-    "icon_size": 32,
-    "icon_opacity": 1.0,
-    "tray_icon_size": 16,
+    //buttons
+    "button_style": "win7",
     "button_width": 60,
     "button_height": 40,
-    "button_style": "win7",
+    "icon_size": 32,
+    "icon_opacity": 1.0,
     "padding_x": 8,
     "padding_y": 4,
     "gap": 2,
+    //tray
+    "tray_icon_size": 16,
     "tray_gap": 0,
+    //start button
+    "start_icon": "assets/start.png",
+    "start_icon_size": 54,
     "start_icon_transition": {
         "duration": 300,
         "easing": "Linear"
     },
-    "start_icon": "assets/start.png",
-    "start_icon_size": 54,
     "start_button_fx": false,
     "start_button_width": 60,
     "start_button_height": 40,
     "start_button_hover": "#22cccccc",
     "start_button_active": "#666666",
+    //search
     "search_icon": "assets/search_dark.png",
     "search_icon_size": 40,
     "search_button_width": 60,
@@ -39,12 +45,15 @@
     "search_box_height": 30,
     "search_box_background": "#ffffff",
     "search_box_foreground": "#000000",
+    //task view
     "task_view_icon": "assets/taskview.png",
     "task_view_icon_size": 40,
     "task_view_button_width": 60,
     "task_view_button_height": 40,
+    //show desktop
     "show_desktop_width": 5,
     "show_desktop_border_color": "#cccccc",
+    //menu
     "menu_background": "#ffffff",
     "menu_foreground": "#000000",
     "menu_hover": "#dddddd",

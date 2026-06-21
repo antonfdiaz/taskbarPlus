@@ -1,4 +1,5 @@
 import json
+import re
 from dataclasses import asdict,dataclass,field
 from pathlib import Path
 import sys
@@ -106,6 +107,19 @@ class SkinMetadata:
     author: str
     version: str
 
+JSONC_COMMENT_RE = re.compile(r'("(?:\\.|[^"\\])*")|(//[^\r\n]*|/\*[\s\S]*?\*/)')
+
+def strip_json_comments(text: str) -> str:
+    def replace(match):
+        if match.group(1):
+            return match.group(1)
+        return "\n"*match.group(2).count("\n")
+
+    return JSONC_COMMENT_RE.sub(replace,text)
+
+def load_jsonc(path: Path):
+    return json.loads(strip_json_comments(path.read_text(encoding="utf-8-sig")))
+
 class Config:
     """Class that manages and gives access to the current configuration."""
     def __init__(self,config_dir="config"):
@@ -119,14 +133,9 @@ class Config:
         self.user_dir = self.config_dir/"user"
 
         #load user config
-        with open(self.user_dir/"settings.json","r",encoding="utf-8") as f:
-            settings_data = json.load(f)
-
-        with open(self.user_dir/"apps.json","r",encoding="utf-8") as f:
-            apps_data = json.load(f)
-
-        with open(self.user_dir/"behavior.json","r",encoding="utf-8") as f:
-            behavior_data = json.load(f)
+        settings_data = load_jsonc(self.user_dir/"settings.json")
+        apps_data = load_jsonc(self.user_dir/"apps.json")
+        behavior_data = load_jsonc(self.user_dir/"behavior.json")
 
         self.settings = SettingsConfig(**settings_data)
         self.apps = AppsConfig(**apps_data)
@@ -138,14 +147,14 @@ class Config:
 
         try:
             #load skin config + metadata
-            with open(self.skins_dir/self.settings.skin/"metadata.json","r",encoding="utf-8") as f:
-                skin_md_data = json.load(f)
+            skin_dir = self.skins_dir/self.settings.skin
+            self.theme_path = skin_dir/"theme.jsonc"
+            if not self.theme_path.exists():
+                self.theme_path = skin_dir/"theme.json"
 
-            with open(self.skins_dir/self.settings.skin/"layout.json","r",encoding="utf-8") as f:
-                layout_data = json.load(f)
-
-            with open(self.skins_dir/self.settings.skin/"theme.json","r",encoding="utf-8") as f:
-                theme_data = json.load(f)
+            skin_md_data = load_jsonc(skin_dir/"metadata.json")
+            layout_data = load_jsonc(skin_dir/"layout.json")
+            theme_data = load_jsonc(self.theme_path)
         except FileNotFoundError as e:
             from PySide6.QtWidgets import QMessageBox
             msgbox = QMessageBox()
@@ -178,7 +187,7 @@ class Config:
         return self.root_dir/app_path
 
     def save_theme(self):
-        with open(self.skins_dir/self.settings.skin/"theme.json","w",encoding="utf-8") as f:
+        with open(self.theme_path,"w",encoding="utf-8") as f:
             json.dump(asdict(self.theme),f,indent=4)
             f.write("\n")
 
