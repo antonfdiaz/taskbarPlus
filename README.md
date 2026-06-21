@@ -36,7 +36,7 @@ To build the project and make an .exe, do the following steps:
 - Build the project by double-clicking `build.bat`
 - To run it, just open `taskbarPlus.exe`
 
-After building, it is best to copy the files `taskbarPlus.exe`, `config/`, `assets/` and `l18n/` to a folder separate from the source code.
+After building, it is best to copy `taskbarPlus.exe`, `config/`, `assets/`, `plugins` and `l18n/` to a folder separate from the source code.
 
 ## Configuration
 
