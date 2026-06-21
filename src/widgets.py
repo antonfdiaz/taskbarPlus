@@ -246,14 +246,191 @@ class ClockWidget(QLabel):
         self.setText(text)
         QTimer.singleShot(1000,self.update_time)
 
-class TaskbarButton(QAbstractButton):
+class TaskbarBaseButton(QAbstractButton):
+    """Common button base for taskbar widgets."""
+
+    def __init__(self,config: Config,parent=None,*,tray_icon: bool = False,item_id: str | None = None):
+        super().__init__(parent)
+        self.config = config
+        self.tray_icon = tray_icon
+        self.item_id = item_id
+        self.hovered = False
+        self.pressed = False
+        self.bg_hover_progress = 0.0
+        self.icon_hover_progress = 0.0
+        self.indicator_hover_progress = 0.0
+        self.button_style = self.config.theme.button_style
+
+        self.bg_anim = QPropertyAnimation(self,b"bgHoverProgress",self)
+        self.bg_anim.setDuration(150)
+        self.bg_anim.setEasingCurve(QEasingCurve.OutCubic)
+
+        self.icon_anim = QPropertyAnimation(self,b"iconHoverProgress",self)
+        self.icon_anim.setDuration(150)
+        self.icon_anim.setEasingCurve(QEasingCurve.OutCubic)
+
+        self.indicator_anim = QPropertyAnimation(self,b"indicatorHoverProgress",self)
+        self.indicator_anim.setDuration(150)
+        self.indicator_anim.setEasingCurve(QEasingCurve.OutCubic)
+
+        self.setMouseTracking(True)
+
+    def tr(self,key):
+        return key
+
+    def easing_curve(self,name: str | None,default):
+        if not name:
+            return default
+
+        easing_type = getattr(QEasingCurve.Type,name,None)
+        if easing_type is None:
+            easing_type = getattr(QEasingCurve,name,None)
+        return easing_type if easing_type is not None else default
+
+    def get_bg_hover_progress(self):
+        return self.bg_hover_progress
+
+    def set_bg_hover_progress(self,value):
+        self.bg_hover_progress = float(value)
+        self.update()
+
+    bgHoverProgress = Property(float,get_bg_hover_progress,set_bg_hover_progress)
+
+    def get_icon_hover_progress(self):
+        return self.icon_hover_progress
+
+    def set_icon_hover_progress(self,value):
+        self.icon_hover_progress = float(value)
+        self.update()
+
+    iconHoverProgress = Property(float,get_icon_hover_progress,set_icon_hover_progress)
+
+    def get_indicator_hover_progress(self):
+        return self.indicator_hover_progress
+
+    def set_indicator_hover_progress(self,value):
+        self.indicator_hover_progress = float(value)
+        self.update()
+
+    indicatorHoverProgress = Property(float,get_indicator_hover_progress,set_indicator_hover_progress)
+
+    def common_icon_size(self) -> int:
+        if self.tray_icon:
+            return self.config.theme.tray_icon_size
+        return self.config.theme.icon_size
+
+    def common_button_width(self) -> int:
+        if self.tray_icon:
+            return self.config.theme.tray_icon_size+self.config.theme.padding_x
+        if self.item_id == "start":
+            return self.config.theme.start_button_width
+        if self.item_id == "search":
+            return self.config.theme.search_button_width
+        if self.item_id == "task_view":
+            return self.config.theme.task_view_button_width
+        return self.config.theme.button_width
+
+    def common_button_height(self) -> int:
+        if self.item_id == "start":
+            return self.config.theme.start_button_height
+        if self.item_id == "search":
+            return self.config.theme.search_button_height
+        if self.item_id == "task_view":
+            return self.config.theme.task_view_button_height
+        return self.config.theme.button_height
+
+    def apply_common_button_size(self):
+        self.setFixedSize(self.common_button_width(),self.common_button_height())
+
+    def common_background_color(self,active: bool = False) -> QColor:
+        #define background color based on state
+        bg = theme_color(self.config.theme.background)
+        if self.pressed or active:
+            return theme_color(self.config.theme.active)
+        if self.bg_hover_progress > 0.0:
+            hover = theme_color(self.config.theme.hover)
+            hover.setAlphaF(hover.alphaF()*self.bg_hover_progress)
+            return hover
+        return bg
+
+    def draw_common_bg(self,painter: QPainter,rect: QRect,active: bool = False):
+        #draw background
+        painter.fillRect(rect,theme_color(self.config.theme.background))
+        if self.pressed or active:
+            #draw active effect
+            painter.fillRect(rect,theme_color(self.config.theme.active))
+        elif self.bg_hover_progress > 0.0:
+            #draw hover effect
+            hover = theme_color(self.config.theme.hover)
+            hover.setAlphaF(hover.alphaF()*self.bg_hover_progress)
+            painter.fillRect(rect,hover)
+
+    def draw_centered_icon(self,painter: QPainter,rect: QRect,icon: QIcon,icon_size: int | None = None):
+        size = icon_size or self.common_icon_size()
+        pix = icon.pixmap(size,size)
+        x = (rect.width()-pix.width())//2
+        y = (rect.height()-pix.height())//2
+        painter.drawPixmap(x,y,pix)
+
+    def enterEvent(self,event):
+        self.hovered = True
+
+        self.bg_anim.stop()
+        self.bg_anim.setStartValue(self.bg_hover_progress)
+        self.bg_anim.setEndValue(1.0)
+        self.bg_anim.start()
+
+        self.icon_anim.stop()
+        self.icon_anim.setStartValue(self.icon_hover_progress)
+        self.icon_anim.setEndValue(1.0)
+        self.icon_anim.start()
+
+        self.indicator_anim.stop()
+        self.indicator_anim.setStartValue(self.indicator_hover_progress)
+        self.indicator_anim.setEndValue(1.0)
+        self.indicator_anim.start()
+
+        super().enterEvent(event)
+
+    def leaveEvent(self,event):
+        self.hovered = False
+        self.pressed = False
+
+        self.bg_anim.stop()
+        self.bg_anim.setStartValue(self.bg_hover_progress)
+        self.bg_anim.setEndValue(0.0)
+        self.bg_anim.start()
+
+        self.icon_anim.stop()
+        self.icon_anim.setStartValue(self.icon_hover_progress)
+        self.icon_anim.setEndValue(0.0)
+        self.icon_anim.start()
+
+        self.indicator_anim.stop()
+        self.indicator_anim.setStartValue(self.indicator_hover_progress)
+        self.indicator_anim.setEndValue(0.0)
+        self.indicator_anim.start()
+
+        super().leaveEvent(event)
+
+    def mousePressEvent(self,event):
+        if event.button() == Qt.LeftButton:
+            self.pressed = True
+            self.update()
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self,event):
+        self.pressed = False
+        self.update()
+        super().mouseReleaseEvent(event)
+
+class TaskbarButton(TaskbarBaseButton):
     """Taskbar button widget, represents an item on the taskbar."""
     itemAction = Signal(object,object)
     button_spr_cache: dict[str,QPixmap] = {}
 
     def __init__(self,item: TaskbarItem,config: Config,l18n: L18n,parent=None):
-        super().__init__(parent)
-        self.config = config
+        super().__init__(config,parent,item_id=item.id)
         self.l18n = l18n
         self.item = item
         self.icon = item.icon
@@ -263,13 +440,7 @@ class TaskbarButton(QAbstractButton):
         self.hover_icon_pixmap = item.hover_icon_pixmap
         self.active_icon_pixmap = item.active_icon_pixmap
         self.dominant_hover_color = self.config.theme.hover
-        self.hovered = False
-        self.pressed = False
-        self.bg_hover_progress = 0.0
-        self.icon_hover_progress = 0.0
-        self.indicator_hover_progress = 0.0
 
-        self.button_style = self.config.theme.button_style
         self.button_spr = self.load_button_sprite()
 
         if item.id != "start":
@@ -282,47 +453,15 @@ class TaskbarButton(QAbstractButton):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
 
-        self.bg_anim = QPropertyAnimation(self,b"bgHoverProgress",self)
-        self.bg_anim.setDuration(150)
-        self.bg_anim.setEasingCurve(QEasingCurve.OutCubic)
-
-        self.icon_anim = QPropertyAnimation(self,b"iconHoverProgress",self)
         if item.id == "start":
             transition = getattr(self.config.theme,"start_icon_transition",{}) or {}
             self.icon_anim.setDuration(transition.get("duration",200))
             self.icon_anim.setEasingCurve(self.easing_curve(transition.get("easing"),QEasingCurve.OutCubic))
-        else:
-            self.icon_anim.setDuration(150)
-            self.icon_anim.setEasingCurve(QEasingCurve.OutCubic)
-
-        self.indicator_anim = QPropertyAnimation(self,b"indicatorHoverProgress",self)
-        self.indicator_anim.setDuration(150)
-        self.indicator_anim.setEasingCurve(QEasingCurve.OutCubic)
 
         self.combined = self.config.behavior.taskbar.combine_taskbar_btns and item.title and item.windows
         self.uncombined_width = 200
 
-        self.setMouseTracking(True)
-        if item.id == "start":
-            self.setFixedSize(
-                self.config.theme.start_button_width,
-                self.config.theme.start_button_height
-            )
-        elif item.id == "search":
-            self.setFixedSize(
-                self.config.theme.search_button_width,
-                self.config.theme.search_button_height
-            )
-        elif item.id == "task_view":
-            self.setFixedSize(
-                self.config.theme.task_view_button_width,
-                self.config.theme.task_view_button_height
-            )
-        else:
-            self.setFixedSize(
-                self.button_width(),
-                self.config.theme.button_height
-            )
+        self.apply_common_button_size()
 
     def load_button_sprite(self) -> QPixmap:
         cache_key = str(self.config.active_skin_dir)
@@ -354,33 +493,6 @@ class TaskbarButton(QAbstractButton):
             pin_action.setIcon(QIcon(self.config.resolve_asset("assets/pin.png")) if not self.item.pinned else QIcon(self.config.resolve_asset("assets/unpin.png")))
             pin_action.triggered.connect(lambda: self.itemAction.emit(self.item,"pin"))
             menu.exec(self.mapToGlobal(pos))
-
-    def get_bg_hover_progress(self):
-        return self.bg_hover_progress
-
-    def set_bg_hover_progress(self,value):
-        self.bg_hover_progress = float(value)
-        self.update()
-
-    bgHoverProgress = Property(float,get_bg_hover_progress,set_bg_hover_progress)
-
-    def get_icon_hover_progress(self):
-        return self.icon_hover_progress
-
-    def set_icon_hover_progress(self,value):
-        self.icon_hover_progress = float(value)
-        self.update()
-
-    iconHoverProgress = Property(float,get_icon_hover_progress,set_icon_hover_progress)
-
-    def get_indicator_hover_progress(self):
-        return self.indicator_hover_progress
-
-    def set_indicator_hover_progress(self,value):
-        self.indicator_hover_progress = float(value)
-        self.update()
-
-    indicatorHoverProgress = Property(float,get_indicator_hover_progress,set_indicator_hover_progress)
 
     def enterEvent(self,event):
         self.hovered = True
@@ -504,22 +616,13 @@ class TaskbarButton(QAbstractButton):
         finally:
             painter.end()
 
-    def easing_curve(self,name: str | None,default):
-        if not name:
-            return default
-
-        easing_type = getattr(QEasingCurve.Type,name,None)
-        if easing_type is None:
-            easing_type = getattr(QEasingCurve,name,None)
-        return easing_type if easing_type is not None else default
-
     def has_title_layout(self) -> bool:
         return not self.combined and bool(self.item.title) and bool(self.item.windows)
 
-    def button_width(self) -> int:
+    def common_button_width(self) -> int:
         if self.has_title_layout():
             return max(self.config.theme.button_width,self.uncombined_width)
-        return self.config.theme.button_width
+        return super().common_button_width()
 
     def icon_position(self,rect: QRect,pixmap: QPixmap) -> tuple[int,int]:
         if self.has_title_layout():
@@ -808,41 +911,14 @@ class TaskbarButton(QAbstractButton):
         painter.drawEllipse(QPointF(mouse_x,y),radius,radius)
         painter.restore()
 
-class ShowDesktopButton(QAbstractButton):
+class ShowDesktopButton(TaskbarBaseButton):
     """Button that shows or hides desktop windows when clicked."""
     def __init__(self,config: Config,parent=None):
-        super().__init__(parent)
-        self.config = config
-        self.hovered = False
-        self.pressed = False
-
-        self.setMouseTracking(True)
+        super().__init__(config,parent)
         self.setFixedSize(
             self.config.theme.show_desktop_width,
             self.config.theme.button_height
         )
-
-    def enterEvent(self,event):
-        self.hovered = True
-        self.update()
-        super().enterEvent(event)
-
-    def leaveEvent(self,event):
-        self.hovered = False
-        self.pressed = False
-        self.update()
-        super().leaveEvent(event)
-
-    def mousePressEvent(self,event):
-        if event.button() == Qt.LeftButton:
-            self.pressed = True
-            self.update()
-        super().mousePressEvent(event)
-
-    def mouseReleaseEvent(self,event):
-        self.pressed = False
-        self.update()
-        super().mouseReleaseEvent(event)
 
     def paintEvent(self,event):
         painter = QPainter(self)
@@ -851,13 +927,7 @@ class ShowDesktopButton(QAbstractButton):
         try:
             rect = self.rect()
 
-            bg = theme_color(self.config.theme.background)
-            if self.pressed:
-                bg = theme_color(self.config.theme.active)
-            elif self.hovered:
-                bg = theme_color(self.config.theme.hover)
-
-            painter.fillRect(rect,bg)
+            self.draw_common_bg(painter,rect)
 
             #draw border on the left side
             painter.setPen(QPen(theme_color(self.config.theme.show_desktop_border_color),1))
@@ -938,43 +1008,19 @@ class TrayWidget(QWidget):
     def toggle_collapsed(self):
         self.set_collapsed(not self.collapsed)
 
-class TrayIcon(QAbstractButton):
+class TrayIcon(TaskbarBaseButton):
     """Button that represents a system tray icon."""
     rightClicked = Signal(object)
 
     def __init__(self,item: TrayItem,config: Config,parent=None):
-        super().__init__(parent)
+        super().__init__(config,parent,tray_icon=True)
         self.item = item
         self.icon = item.icon
         self.hover_icon = item.hover_icon
-        self.config = config
-        self.hovered = False
-        self.pressed = False
 
-        self.setMouseTracking(True)
-        self.setFixedSize(
-            self.config.theme.tray_icon_size+self.config.theme.padding_x,
-            self.config.theme.button_height
-        )
+        self.apply_common_button_size()
         if item.tooltip:
             self.setToolTip(item.tooltip)
-
-    def enterEvent(self,event):
-        self.hovered = True
-        self.update()
-        super().enterEvent(event)
-
-    def leaveEvent(self,event):
-        self.hovered = False
-        self.pressed = False
-        self.update()
-        super().leaveEvent(event)
-
-    def mousePressEvent(self,event):
-        if event.button() == Qt.LeftButton:
-            self.pressed = True
-            self.update()
-        super().mousePressEvent(event)
 
     def mouseReleaseEvent(self,event):
         self.pressed = False
@@ -996,21 +1042,10 @@ class TrayIcon(QAbstractButton):
         try:
             rect = self.rect()
 
-            bg = theme_color(self.config.theme.background)
-            if self.pressed:
-                bg = theme_color(self.config.theme.active)
-            elif self.hovered:
-                bg = theme_color(self.config.theme.hover)
+            self.draw_common_bg(painter,rect)
 
-            painter.fillRect(rect,bg)
-
-            icon_size = self.config.theme.tray_icon_size
             icon = self.hover_icon if self.hovered and self.hover_icon else self.icon
-            pix = icon.pixmap(icon_size,icon_size)
-
-            x = (rect.width()-pix.width())//2
-            y = (rect.height()-pix.height())//2
-            painter.drawPixmap(x,y,pix)
+            self.draw_centered_icon(painter,rect,icon)
         finally:
             painter.end()
 
@@ -1132,51 +1167,22 @@ class SearchBox(QLineEdit):
             tap_key(ord("S"))
             release_key(win32con.VK_LWIN)
 
-class TrayCollapseButton(QAbstractButton):
+class TrayCollapseButton(TaskbarBaseButton):
     """Arrow button that collapses or expands the system tray."""
     def __init__(self,config: Config,parent=None):
-        super().__init__(parent)
-        self.config = config
-        self.hovered = False
-        self.pressed = False
+        super().__init__(config,parent,tray_icon=True)
         self.collapsed = False
 
         self.expanded_icon = QIcon(self.config.resolve_asset("assets/chevron-right.png"))
         self.collapsed_icon = QIcon(self.config.resolve_asset("assets/chevron-left.png"))
         self.icon = self.expanded_icon
 
-        self.setMouseTracking(True)
-        self.setFixedSize(
-            self.config.theme.tray_icon_size+self.config.theme.padding_x,
-            self.config.theme.button_height
-        )
+        self.apply_common_button_size()
 
     def set_collapsed(self,collapsed: bool):
         self.collapsed = collapsed
         self.icon = self.collapsed_icon if self.collapsed else self.expanded_icon
         self.update()
-
-    def enterEvent(self,event):
-        self.hovered = True
-        self.update()
-        super().enterEvent(event)
-
-    def leaveEvent(self,event):
-        self.hovered = False
-        self.pressed = False
-        self.update()
-        super().leaveEvent(event)
-
-    def mousePressEvent(self,event):
-        if event.button() == Qt.LeftButton:
-            self.pressed = True
-            self.update()
-        super().mousePressEvent(event)
-
-    def mouseReleaseEvent(self,event):
-        self.pressed = False
-        self.update()
-        super().mouseReleaseEvent(event)
 
     def paintEvent(self,event):
         painter = QPainter(self)
@@ -1185,18 +1191,7 @@ class TrayCollapseButton(QAbstractButton):
         try:
             rect = self.rect()
 
-            bg = theme_color(self.config.theme.background)
-            if self.pressed:
-                bg = theme_color(self.config.theme.active)
-            elif self.hovered:
-                bg = theme_color(self.config.theme.hover)
-
-            painter.fillRect(rect,bg)
-
-            icon_size = self.config.theme.tray_icon_size
-            pix = self.icon.pixmap(icon_size,icon_size)
-            x = (rect.width()-pix.width())//2
-            y = (rect.height()-pix.height())//2
-            painter.drawPixmap(x,y,pix)
+            self.draw_common_bg(painter,rect)
+            self.draw_centered_icon(painter,rect,self.icon)
         finally:
             painter.end()
