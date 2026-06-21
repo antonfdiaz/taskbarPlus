@@ -25,6 +25,8 @@ class TaskbarAppsBar(QWidget):
         self.items = items
         self.drag_start_pos = None
         self.drag_start_index = -1
+        self.dragging = False
+        self.pending_items = None
         self.suppress_click = False
         self.drop_indicator = QWidget(self)
         self.drop_indicator.setFixedWidth(2)
@@ -44,6 +46,10 @@ class TaskbarAppsBar(QWidget):
         self.rebuild()
 
     def set_items(self,items: list[TaskbarItem]):
+        if self.dragging:
+            self.pending_items = items
+            return
+
         self.items = items
         self.rebuild()
 
@@ -88,22 +94,38 @@ class TaskbarAppsBar(QWidget):
             return super().eventFilter(obj,event)
 
         if event.type() == QEvent.MouseButtonPress and event.button() == Qt.LeftButton:
+            if self.dragging:
+                return True
             self.drag_start_pos = event.position().toPoint()
             self.drag_start_index = self.layout.indexOf(obj)
-        elif event.type() == QEvent.MouseMove and self.drag_start_index >= 0:
+        elif event.type() == QEvent.MouseMove and self.drag_start_index >= 0 and self.drag_start_pos is not None:
+            if self.dragging:
+                return True
             if not event.buttons() & Qt.LeftButton:
                 return super().eventFilter(obj,event)
             if (event.position().toPoint()-self.drag_start_pos).manhattanLength() < QApplication.startDragDistance():
                 return super().eventFilter(obj,event)
 
-            drag = QDrag(obj)
-            mime = QMimeData()
-            mime.setData("application/x-tbp-apps-index",QByteArray(str(self.drag_start_index).encode("ascii")))
-            drag.setMimeData(mime)
-            drag.exec(Qt.MoveAction)
-            self.drag_start_index = -1
-            self.suppress_click = True
+            self.dragging = True
+            try:
+                drag = QDrag(obj)
+                mime = QMimeData()
+                mime.setData("application/x-tbp-apps-index",QByteArray(str(self.drag_start_index).encode("ascii")))
+                drag.setMimeData(mime)
+                drag.exec(Qt.MoveAction)
+            finally:
+                self.dragging = False
+                self.drag_start_pos = None
+                self.drag_start_index = -1
+                self.suppress_click = True
+                self.hide_drop_indicator()
+                if self.pending_items is not None:
+                    items = self.pending_items
+                    self.pending_items = None
+                    self.set_items(items)
+            return True
         elif event.type() == QEvent.MouseButtonRelease:
+            self.drag_start_pos = None
             self.drag_start_index = -1
 
         return super().eventFilter(obj,event)

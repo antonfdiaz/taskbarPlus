@@ -833,6 +833,9 @@ class MainWindow(QMainWindow):
         )
         self.config.save_apps()
 
+        QTimer.singleShot(0,lambda items=items: self.set_apps_bar_items(items))
+
+    def set_apps_bar_items(self,items: list[TaskbarItem]):
         for apps_bar in self.apps_bars:
             apps_bar.set_items(items)
     
