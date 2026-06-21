@@ -1,7 +1,9 @@
 from __future__ import annotations
 from collections import defaultdict
+import importlib.util
 import json
 from pathlib import Path
+import re
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import QTimer,Qt,Signal
@@ -14,6 +16,7 @@ from src.blur import apply_acrylic
 from src.utils import theme_color_css,menu_style,theme_color
 from src.win_observer import WindowEventWatcher
 import subprocess
+import sys
 import win32gui
 import win32con
 import os
@@ -360,21 +363,31 @@ class MainWindow(QMainWindow):
 
     def scan_widget_plugins(self):
         """Scans for custom widget plugins and returns a layout id -> widget class map."""
-        plugins_dir = Path(__file__).parent.parent/"plugins"
+        plugins_dir = self.config.root_dir/"plugins"
         if not plugins_dir.exists():
             return {}
+
+        if str(plugins_dir) not in sys.path:
+            sys.path.insert(0,str(plugins_dir))
 
         widget_classes = {}
         for plugin_file in plugins_dir.iterdir():
             if not plugin_file.is_file() or plugin_file.suffix.lower() != ".py":
                 continue
 
-            module_name = f"plugins.{plugin_file.stem}"
+            safe_name = re.sub(r"\W+","_",plugin_file.stem).strip("_") or "plugin"
+            module_name = f"taskbarplus_plugin_{safe_name}"
             try:
-                module = __import__(module_name, fromlist=[""])
-                print(f"imported plugin {module_name}")
+                spec = importlib.util.spec_from_file_location(module_name,plugin_file)
+                if spec is None or spec.loader is None:
+                    print(f"couldn't import plugin {plugin_file.name}: invalid module spec")
+                    continue
+                module = importlib.util.module_from_spec(spec)
+                sys.modules[module_name] = module
+                spec.loader.exec_module(module)
+                print(f"imported plugin {plugin_file}")
             except Exception as e:
-                print(f"couldn't import plugin {module_name}:",e)
+                print(f"couldn't import plugin {plugin_file}:",e)
                 continue
 
             for attr_name in dir(module):
