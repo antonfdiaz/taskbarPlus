@@ -1,4 +1,3 @@
-from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter,QPen
 from PySide6.QtWidgets import QWidget
 from src.utils import theme_color
