@@ -137,7 +137,9 @@ def should_include_window(hwnd,title,exe):
         "searchhost.exe",
         "startmenuexperiencehost.exe",
         "applicationframehost.exe",
-        "lockapp.exe"
+        "lockapp.exe",
+        "taskbarPlus.exe",
+        "python.exe",
     }
 
     if exe_name in ignored:
