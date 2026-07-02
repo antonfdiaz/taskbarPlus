@@ -156,7 +156,26 @@ class MainWindow(QMainWindow):
 
     def show_about_dialog(self):
         msg = QMessageBox(self)
-        msg.setStyleSheet(f"background-color: {self.config.theme.menu_background}; color: {self.config.theme.menu_foreground};")
+        msg.setStyleSheet(f"""
+            QMessageBox {{
+                background-color: #fff;
+                color: #000;
+            }}
+            QPushButton {{
+                background-color: #e1e1e1;
+                border: 1px solid #adadad;
+                color: #000;
+                padding: 2px 28px;
+            }}
+            QPushButton:hover {{
+                background-color: #e5f1fb;
+                border: 1px solid #0078d7;
+            }}
+            QPushButton:pressed {{
+                background-color: #cce4f7;
+                border: 1px solid #005499;
+            }}
+        """)
         msg.setIcon(QMessageBox.Information)
         msg.setWindowTitle(self.tr("taskbar.about.title"))
         msg.setText(f"taskbarPlus {self.config.version}")
