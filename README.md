@@ -59,3 +59,9 @@ taskbarPlus comes with 5 default skins:
 - `centered` is a centered taskbar style, like in Windows 11.
 - `centered-sb` is the superbar variant of `centered`.
 - `aero` is a Windows 7 style skin.
+
+## Plugins
+Custom widget plugins are made with Python. I included a few example widgets on the `plugins` folder: `restart_explorer`, `separator`, `open_config` and `volume_mixer`. To use custom assets within the plugin, place them in the `assets` folder of the program. A Python interpreter does not need to be installed, as the program is already made with Python. To add custom widget plugins to a skin, edit the skin's `layout.json` and add them to the layout.
+> [!IMPORTANT]
+> Plugins are regular Python code running with the same permissions as taskbarPlus.
+> Only install plugins from sources you trust, because they can run commands and access your system.
